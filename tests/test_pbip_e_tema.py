@@ -88,7 +88,7 @@ def coletar_hex_json(obj) -> list[str]:
 
 def arquivos_pbip(pasta: Path) -> dict[str, bytes]:
     return {
-        p.relative_to(pasta).as_posix(): p.read_bytes()
+        p.relative_to(pasta).as_posix(): p.read_bytes().replace(b"\r\n", b"\n")
         for p in sorted(pasta.rglob("*"))
         if p.is_file() and not LOCAIS.search(p.relative_to(pasta).as_posix())
     }
