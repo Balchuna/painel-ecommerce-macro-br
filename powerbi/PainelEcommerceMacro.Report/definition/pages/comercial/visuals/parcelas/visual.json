@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "parcelas",
   "position": {
-    "x": 784,
-    "y": 380,
-    "z": 14,
-    "height": 144,
-    "width": 472,
-    "tabOrder": 14
+    "x": 440,
+    "y": 456,
+    "z": 11,
+    "height": 224,
+    "width": 400,
+    "tabOrder": 11
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -143,8 +143,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'67,9% dos pedidos no cartão são parcelados'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Parcelas"
                 }
               }
             }
@@ -157,7 +162,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Pedidos no cartão · 1x à vista em cinza, parcelados em azul'"
                 }
               }
             }

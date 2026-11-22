@@ -1,0 +1,58 @@
+// slides.scss: tema Reveal.js do Padrão BI. Cores e medidas vêm de marca/tokens.css (var(--...)),
+// que o slides.qmd carrega junto; aqui só ajustamos a escala para 1280×720.
+
+/*-- scss:defaults --*/
+$presentation-font-size-root: 26px;
+$presentation-line-height: 1.45;
+$presentation-heading-font-weight: 600;
+$presentation-heading-line-height: 1.2;
+$presentation-heading-letter-spacing: -0.01em;
+$presentation-heading-text-transform: none;
+$presentation-h1-font-size: 1.9em;
+$presentation-h2-font-size: 1.35em;
+$presentation-h3-font-size: 1.05em;
+$presentation-title-slide-text-align: left;
+$presentation-slide-text-align: left;
+$presentation-block-margin: 16px;
+
+/*-- scss:rules --*/
+.reveal { color: var(--ink); }
+.reveal .slides section { text-align: left; }
+.reveal h2 { margin-bottom: 4px; text-wrap: balance; }
+.reveal .subtitulo { color: var(--ink-2); font-size: 0.72em; margin: 0 0 20px; }
+.reveal .fonte { color: var(--ink-3); font-size: 15px; margin-top: 12px; }
+.reveal .leitura { color: var(--ink-2); font-size: 22px; max-width: 46em; margin-top: 32px; }
+// Quarto já estiliza o rodapé com seletor próprio; div.footer ganha a disputa sem !important.
+.reveal div.footer, .reveal div.slide-number { color: var(--ink-3); font-size: 14px; }
+.reveal div.footer { text-align: left; left: 3vw; right: auto; }
+.reveal ul { display: block; margin-left: 1.1em; }
+.reveal li { margin: 6px 0; }
+.reveal li::marker { color: var(--ink-3); }
+.reveal ::selection { background: var(--acento-wash); color: var(--ink); }
+
+// Capa: título grande, assinatura discreta, linha fina do acento como único ornamento.
+.reveal .quarto-title-block .title { font-size: 2.1em; margin-bottom: 8px; }
+.reveal .quarto-title-block .subtitle { color: var(--ink-2); font-size: 0.95em; }
+.reveal .quarto-title-block .quarto-title-authors,
+.reveal .quarto-title-block .date { color: var(--ink-3); font-size: 18px; }
+
+// Linha de KPIs: o mesmo cartão do painel e do PDF.
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--raio-cartao);
+  padding: 18px 20px 16px;
+}
+.kpi .rotulo { font-size: 18px; color: var(--ink-2); }
+.kpi .valor { font-size: 52px; font-weight: 600; line-height: 1.15; margin: 6px 0 8px; letter-spacing: -0.01em; }
+.kpi .delta { font-size: 18px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.kpi .delta svg { fill: currentColor; }
+.bom { color: var(--positivo); } .ruim { color: var(--negativo); }
+
+// Linhagem em três passos, sem cartões: colunas separadas por fio.
+.linhagem { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 28px; }
+.linhagem > div { padding: 0 28px; border-left: 1px solid var(--border-strong); }
+.linhagem > div:first-child { padding-left: 0; border-left: 0; }
+// Sem títulos dentro das colunas: no Reveal, div com título vira slide vertical.
+.linhagem .rotulo { font-size: 18px; color: var(--ink-2); font-weight: 600; }
+.linhagem p { font-size: 20px; margin: 0 0 8px; }
+.linhagem .n { font-size: 56px; font-weight: 600; line-height: 1.1; }

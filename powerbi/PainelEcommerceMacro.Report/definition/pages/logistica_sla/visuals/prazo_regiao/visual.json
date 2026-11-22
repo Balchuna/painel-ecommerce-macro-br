@@ -3,11 +3,11 @@
   "name": "prazo_regiao",
   "position": {
     "x": 24,
-    "y": 512,
-    "z": 12,
-    "height": 172,
-    "width": 600,
-    "tabOrder": 12
+    "y": 456,
+    "z": 10,
+    "height": 224,
+    "width": 608,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -79,30 +79,37 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#1E3A5F'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Prazo Região Destaque"
                     }
                   }
                 }
               }
             }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
           }
         }
       ],
       "categoryAxis": [
         {
           "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "8D"
-                }
-              }
-            },
             "innerPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "8L"
+                  "Value": "12L"
                 }
               }
             }
@@ -132,10 +139,10 @@
                 }
               }
             },
-            "fontSize": {
+            "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "'OutsideEnd'"
                 }
               }
             }
@@ -169,15 +176,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Norte e Nordeste esperam 1,9× mais que o Sudeste (dias corridos)'"
-                }
-              }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "10D"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Prazo Região"
                 }
               }
             }
@@ -190,7 +195,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dias corridos entre compra e entrega real · média por região'"
                 }
               }
             }

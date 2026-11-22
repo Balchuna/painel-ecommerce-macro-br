@@ -3,10 +3,10 @@
   "name": "titulo",
   "position": {
     "x": 24,
-    "y": 6,
+    "y": 16,
     "z": 0,
-    "height": 76,
-    "width": 740,
+    "height": 44,
+    "width": 608,
     "tabOrder": 0
   },
   "visual": {
@@ -19,11 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "03 · COMERCIAL & CLIENTES",
+                    "value": "Comercial, categorias e clientes",
                     "textStyle": {
+                      "fontFamily": "Segoe UI Semibold",
                       "fontWeight": "bold",
-                      "fontSize": "7.5pt",
-                      "color": "#0D9488"
+                      "fontSize": "15pt",
+                      "color": "#1A1D21"
                     }
                   }
                 ]
@@ -31,22 +32,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Poucas categorias e poucos vendedores carregam a receita",
+                    "value": "Concentração de categorias e vendedores no grão de item · pagamentos, parcelas e retenção por coorte",
                     "textStyle": {
-                      "fontWeight": "bold",
-                      "fontSize": "14pt",
-                      "color": "#0F172A"
-                    }
-                  }
-                ]
-              },
-              {
-                "textRuns": [
-                  {
-                    "value": "Pareto de categorias, mix de pagamento, parcelamento, retenção por coorte e concentração de vendedores.",
-                    "textStyle": {
-                      "fontSize": "8pt",
-                      "color": "#64748B"
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "9pt",
+                      "color": "#4A515A"
                     }
                   }
                 ]

@@ -3,11 +3,11 @@
   "name": "nota_por_atraso",
   "position": {
     "x": 24,
-    "y": 208,
-    "z": 11,
-    "height": 288,
-    "width": 600,
-    "tabOrder": 11
+    "y": 168,
+    "z": 8,
+    "height": 272,
+    "width": 608,
+    "tabOrder": 8
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -46,8 +46,8 @@
                 }
               },
               "queryRef": "Medidas.Nota Média",
-              "nativeQueryRef": "Nota Média",
-              "displayName": "Nota Média"
+              "nativeQueryRef": "Nota média",
+              "displayName": "Nota média"
             }
           ]
         }
@@ -112,13 +112,6 @@
                   "Value": "true"
                 }
               }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "10D"
-                }
-              }
             }
           }
         }
@@ -170,8 +163,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Com 8+ dias de atraso, a nota despenca de 4,29★ para 1,67★–1,72★'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Nota Atraso"
                 }
               }
             }
@@ -191,7 +189,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Nota média da avaliação (1–5) por faixa ordinal de atraso na entrega.'"
+                  "Value": "'Nota média de 1 a 5 por faixa ordinal de atraso na entrega'"
                 }
               }
             }

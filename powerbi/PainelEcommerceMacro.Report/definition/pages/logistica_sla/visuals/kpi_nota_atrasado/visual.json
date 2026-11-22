@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "kpi_nota_atrasado",
   "position": {
-    "x": 856,
-    "y": 96,
-    "z": 9,
-    "height": 96,
-    "width": 192,
-    "tabOrder": 9
+    "x": 960,
+    "y": 72,
+    "z": 7,
+    "height": 80,
+    "width": 296,
+    "tabOrder": 7
   },
   "visual": {
     "visualType": "card",
@@ -40,7 +40,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "22D"
+                  "Value": "18D"
                 }
               }
             },
@@ -50,23 +50,46 @@
                   "Value": "1D"
                 }
               }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#DC2626'"
-                    }
-                  }
-                }
-              }
             }
           }
         }
       ]
     },
     "visualContainerObjects": {
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ],
       "title": [
         {
           "properties": {
@@ -80,7 +103,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'NOTA ATRASADO'"
+                  "Value": "'Nota média com atraso'"
                 }
               }
             }
@@ -97,10 +120,22 @@
                 }
               }
             },
-            "text": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'queda de -2,02★'"
+                  "Value": "8D"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Subtítulo Nota Atraso"
                 }
               }
             },
@@ -108,8 +143,13 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#DC2626'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Impacto Atraso"
                     }
                   }
                 }

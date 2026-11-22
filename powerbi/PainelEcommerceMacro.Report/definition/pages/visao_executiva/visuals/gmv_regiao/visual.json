@@ -3,11 +3,11 @@
   "name": "gmv_regiao",
   "position": {
     "x": 24,
-    "y": 512,
-    "z": 13,
-    "height": 172,
-    "width": 400,
-    "tabOrder": 13
+    "y": 456,
+    "z": 10,
+    "height": 224,
+    "width": 608,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -46,8 +46,8 @@
                 }
               },
               "queryRef": "Medidas.GMV Real IPCA",
-              "nativeQueryRef": "GMV Real",
-              "displayName": "GMV Real"
+              "nativeQueryRef": "GMV real",
+              "displayName": "GMV real"
             }
           ]
         }
@@ -79,30 +79,37 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#1E3A5F'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Região Destaque"
                     }
                   }
                 }
               }
             }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
           }
         }
       ],
       "categoryAxis": [
         {
           "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "8D"
-                }
-              }
-            },
             "innerPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "8L"
+                  "Value": "12L"
                 }
               }
             }
@@ -132,10 +139,10 @@
                 }
               }
             },
-            "fontSize": {
+            "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "'OutsideEnd'"
                 }
               }
             }
@@ -169,15 +176,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Sudeste concentra 64,6% do GMV real'"
-                }
-              }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "10D"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título GMV Região"
                 }
               }
             }
@@ -190,7 +195,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'R$ milhões a preços de out/2018 · líder destacada em azul'"
                 }
               }
             }

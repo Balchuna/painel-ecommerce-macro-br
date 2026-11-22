@@ -3,11 +3,11 @@
   "name": "kpi_prazo_medio",
   "position": {
     "x": 24,
-    "y": 96,
-    "z": 5,
-    "height": 96,
-    "width": 192,
-    "tabOrder": 5
+    "y": 72,
+    "z": 4,
+    "height": 80,
+    "width": 296,
+    "tabOrder": 4
   },
   "visual": {
     "visualType": "card",
@@ -40,7 +40,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "22D"
+                  "Value": "18D"
                 }
               }
             },
@@ -56,6 +56,40 @@
       ]
     },
     "visualContainerObjects": {
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ],
       "title": [
         {
           "properties": {
@@ -69,7 +103,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'PRAZO MÉDIO'"
+                  "Value": "'Prazo médio de entrega'"
                 }
               }
             }
@@ -86,10 +120,22 @@
                 }
               }
             },
-            "text": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'compra até entrega'"
+                  "Value": "8D"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Subtítulo Prazo Médio"
                 }
               }
             }

@@ -4,10 +4,10 @@ Um projeto PBIP é uma pasta de arquivos de texto que o Power BI Desktop abre co
 o modelo semântico fica em TMDL e o relatório em PBIR. Este script gera tudo a partir das
 peças versionadas do repositório:
 
-- as medidas DAX e suas descrições de dax/medidas.dax;
+- as medidas DAX e suas descrições de dax/medidas.dax (incluindo títulos dinâmicos fx);
 - as 9 relações do modelo estrela de docs/MODELO.md;
-- o tema editorial de tema/tema.json;
-- as 4 páginas e coordenadas exatas de docs/DESIGN_SPEC.md;
+- os tokens e a grade 1280x720 de marca/tokens.json;
+- o tema Power BI gerado em marca/powerbi/tema-azul-claro.json (espelhado em tema/tema.json);
 - as consultas Power Query M lendo data/limpa/*.csv via parâmetro portável PastaDados.
 
 Sem argumentos, grava powerbi/ com um caminho de exemplo em PastaDados (sem vazar caminhos
@@ -30,7 +30,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 MEDIDAS_ARQ = RAIZ / "dax" / "medidas.dax"
 MODELO_MD = RAIZ / "docs" / "MODELO.md"
-TEMA_ARQ = RAIZ / "tema" / "tema.json"
+TOKENS_ARQ = RAIZ / "marca" / "tokens.json"
+TEMA_ARQ = RAIZ / "marca" / "powerbi" / "tema-azul-claro.json"
 SAIDA_PADRAO = RAIZ / "powerbi"
 
 NOME = "PainelEcommerceMacro"
@@ -40,6 +41,21 @@ ESPACO = uuid.uuid5(uuid.NAMESPACE_URL, "painel-ecommerce-macro-br")
 
 ESQUEMAS = "https://developer.microsoft.com/json-schemas/fabric/"
 VERSOES = {"report": "3.0.0", "page": "2.0.0", "visual": "2.4.0"}
+
+# Tokens e grade carregados diretamente de marca/tokens.json (zero hex escrito à mão).
+TOKENS = json.loads(TOKENS_ARQ.read_text(encoding="utf-8"))
+TEMA_CLARO = TOKENS["tema"]["claro"]
+ACENTO_NOME = "azul"
+CORES_SERIE = [TOKENS["cores"][n]["claro"]["mark"] for n in TOKENS["acentos"][ACENTO_NOME]]
+COR_ACENTO = CORES_SERIE[0]
+COR_SERIE_2 = CORES_SERIE[1]
+TIPO_PBI = TOKENS["tipo"]["powerbi_pt"]
+GRADE = TOKENS["grade_powerbi"]
+PAGINA_LARGURA, PAGINA_ALTURA = GRADE["pagina"]
+MARGEM = GRADE["margem"]
+CALHA = GRADE["calha"]
+LARGURA_COL = GRADE["largura_coluna"]
+FAIXAS = GRADE["faixas"]
 
 TEXTO, INTEIRO, DECIMAL, DATA = "string", "int64", "double", "dateTime"
 M_TIPO = {
@@ -273,7 +289,7 @@ FORMATOS_COLUNA = {
 
 TABELA_DE_DATAS = ("dim_calendario", "data")
 
-# Formatação das medidas DAX conforme DESIGN_SPEC.md §2.3
+# Formatação das medidas DAX seguindo marca/REGRAS.md (sem símbolos unicode de ícone).
 FORMATO_MOEDA_GRANDE = {
     "GMV Nominal",
     "GMV Real IPCA",
@@ -317,35 +333,43 @@ FORMATO_PCT_2 = {
 }
 FORMATO_NOTA = {"Nota Média", "Nota Média no Prazo", "Nota Média Atrasado"}
 FORMATO_DIAS = {"Prazo Médio Entrega (d)", "Atraso Médio quando Atrasa (d)"}
-FORMATO_TEXTO_COR = {
-    "Selo Gabarito SQL",
-    "Delta GMV Nominal Texto",
-    "Delta GMV Real Texto",
-    "Delta Pedidos Texto",
-    "Cor Delta GMV Real",
-    "Cor SLA UF",
-    "Cor Faixa Atraso",
-    "Cor Retenção Coorte",
-    "Cor Decil Vendedores",
-    "Cor Parcelas",
-}
+FORMATO_TEXTO_COR = {"Selo Gabarito SQL"}
 FORMATO_ESPECIFICO = {
     "Itens por Pedido": "0.00",
     "Parcelas Médias (Cartão)": '0.00"x"',
     "Fator Deflator Médio": "0.0000",
-    "Efeito Inflação YoY (p.p.)": '+0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."',
-    "Impacto Atraso na Nota": '+0.00 "★";-0.00 "★";0.00 "★"',
+    "Efeito Inflação YoY (p.p.)": '+0.0 "p.p.";−0.0 "p.p.";0.0 "p.p."',
+    "Impacto Atraso na Nota": '+0.00 "pts";−0.00 "pts";0.00 "pts"',
 }
 
 RELACAO_RE = re.compile(r"^\|\s*`(\w+)\[(\w+)\]`\s*\|\s*`(\w+)\[(\w+)\]`\s*\|", re.M)
 NOME_SIMPLES = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
-RODAPE_TEXTO = (
-    "Fontes: Olist Brazilian E-Commerce Public Dataset (CC BY-NC-SA 4.0) · "
-    "Banco Central SGS 433 (IPCA), 432 (Selic), 1 (PTAX) · "
-    "IBGE Localidades & População 2018 · "
-    "Valores reais a preços de out/2018 (IPCA) · APIs coletadas em 22/11/2026"
+RODAPE_FONTES = (
+    "Fontes: Olist (CC BY-NC-SA 4.0) · BCB SGS 433 (IPCA), 432 (Selic), 1 (PTAX) · "
+    "IBGE População 2018 · Valores reais out/2018 (IPCA) · Coleta: 22/11/2026"
 )
+RODAPE_ASSINATURA = f"{TOKENS['assinatura']} · Power BI · SQL · Python"
+
+
+# ---------------------------------------------------------------------------------------------
+# Grade 1280x720 (marca/tokens.json > grade_powerbi)
+
+
+def col_x(col_inicio: int) -> int:
+    """Retorna x inicial de uma coluna 1-based (1..12) na grade de 88 px com calha de 16 px."""
+    return MARGEM + (col_inicio - 1) * (LARGURA_COL + CALHA)
+
+
+def col_w(qtd_cols: int) -> int:
+    """Retorna a largura em px de um bloco abrangendo `qtd_cols` colunas da grade."""
+    return qtd_cols * LARGURA_COL + (qtd_cols - 1) * CALHA
+
+
+def faixa(nome: str) -> tuple[int, int]:
+    """Retorna (y, h) de uma das cinco faixas normativas de marca/tokens.json."""
+    y, h = FAIXAS[nome]
+    return int(y), int(h)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -402,7 +426,7 @@ def ler_relacoes() -> list[tuple[str, str, str, str]]:
 
 
 def formato_da_medida(nome: str) -> str | None:
-    if nome in FORMATO_TEXTO_COR:
+    if nome in FORMATO_TEXTO_COR or nome.startswith(("Título ", "Subtítulo ", "Cor ", "Delta ")):
         return None
     if nome in FORMATO_ESPECIFICO:
         return FORMATO_ESPECIFICO[nome]
@@ -415,7 +439,7 @@ def formato_da_medida(nome: str) -> str | None:
     if nome in FORMATO_PCT_2:
         return "0.00%"
     if nome in FORMATO_NOTA:
-        return '0.00 "★"'
+        return "0.00"
     if nome in FORMATO_DIAS:
         return '0.0 "d"'
     return "#,0"
@@ -451,10 +475,10 @@ def m_para_tabela(nome: str, spec: dict) -> str:
         etapas += [
             (
                 'ComPagamentoPt = Table.AddColumn(Tipada, "tipo_pagamento_pt", each '
-                'if [tipo_pagamento_principal] = "credit_card" then "Cartão de Crédito" '
-                'else if [tipo_pagamento_principal] = "boleto" then "Boleto Bancário" '
-                'else if [tipo_pagamento_principal] = "voucher" then "Voucher / Cupom" '
-                'else if [tipo_pagamento_principal] = "debit_card" then "Cartão de Débito" '
+                'if [tipo_pagamento_principal] = "credit_card" then "Cartão de crédito" '
+                'else if [tipo_pagamento_principal] = "boleto" then "Boleto bancário" '
+                'else if [tipo_pagamento_principal] = "voucher" then "Voucher e cupom" '
+                'else if [tipo_pagamento_principal] = "debit_card" then "Cartão de débito" '
                 'else if [tipo_pagamento_principal] = "not_defined" then "Não definido" '
                 'else "Sem registro", type text)'
             ),
@@ -714,7 +738,7 @@ def escrever_modelo(pasta: Path, pasta_dados: str) -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# Relatório (PBIR v2.4.0 — seguindo DESIGN_SPEC.md pixel a pixel, zero overlap)
+# Relatório (PBIR v2.4.0 · grade exata 1280x720 de marca/REGRAS.md e títulos DAX fx)
 
 
 def coluna(tabela: str, nome: str) -> dict:
@@ -754,9 +778,30 @@ def cor_medida(nome_medida: str) -> dict:
     return {"solid": {"color": {"expr": medida(nome_medida)}}}
 
 
-def cabecalho_visual(titulo_txt: str, subtitulo_txt: str | None = None) -> dict:
+def padding_container(top: int, bottom: int, left: int, right: int) -> list[dict]:
+    return [
+        {
+            "properties": {
+                "top": literal(f"{top}D"),
+                "bottom": literal(f"{bottom}D"),
+                "left": literal(f"{left}D"),
+                "right": literal(f"{right}D"),
+            }
+        }
+    ]
+
+
+def cabecalho_visual_fx(titulo_medida: str, subtitulo_txt: str | None = None) -> dict:
+    """Liga o título do visual a uma medida DAX dinâmica (fx) com subtítulo de unidade e período."""
     container: dict = {
-        "title": [{"properties": {"show": literal("true"), "text": texto_literal(titulo_txt)}}],
+        "title": [
+            {
+                "properties": {
+                    "show": literal("true"),
+                    "text": {"expr": medida(titulo_medida)},
+                }
+            }
+        ],
     }
     if subtitulo_txt:
         container["subTitle"] = [
@@ -818,37 +863,42 @@ def filtro_top_n(nome: str, campo_cat: dict, campo_valor: dict, n: int) -> dict:
         "filter": {
             "Version": 2,
             "From": [
-                {"Name": "subquery", "Expression": {
-                    "Subquery": {
-                        "Query": {
-                            "Version": 2,
-                            "From": origem_cat + origem_val,
-                            "Select": [{"Column": local_cat["Column"], "Name": "field"}],
-                            "OrderBy": [{"Direction": 2, "Expression": local_val}],
-                            "Top": n,
+                {
+                    "Name": "subquery",
+                    "Expression": {
+                        "Subquery": {
+                            "Query": {
+                                "Version": 2,
+                                "From": origem_cat + origem_val,
+                                "Select": [{"Column": local_cat["Column"], "Name": "field"}],
+                                "OrderBy": [{"Direction": 2, "Expression": local_val}],
+                                "Top": n,
+                            }
                         }
-                    }
-                }, "Type": 2},
+                    },
+                    "Type": 2,
+                },
                 *origem_cat,
             ],
-            "Where": [{
-                "Condition": {
-                    "In": {
-                        "Expressions": [local_cat],
-                        "Table": {"SourceRef": {"Source": "subquery"}},
+            "Where": [
+                {
+                    "Condition": {
+                        "In": {
+                            "Expressions": [local_cat],
+                            "Table": {"SourceRef": {"Source": "subquery"}},
+                        }
                     }
                 }
-            }],
+            ],
         },
         "howCreated": "User",
     }
 
 
 class Pagina:
-    def __init__(self, nome: str, display_name: str, eyebrow: str, titulo: str, subtitulo: str):
+    def __init__(self, nome: str, display_name: str, titulo: str, subtitulo: str):
         self.nome = nome
         self.display_name = display_name
-        self.eyebrow = eyebrow
         self.titulo = titulo
         self.subtitulo = subtitulo
         self.visuais: list[dict] = []
@@ -931,34 +981,24 @@ class Pagina:
         )
 
     def cabecalho(self, com_slicers: bool = True) -> None:
-        largura_header = 740 if com_slicers else 1232
+        y_cab, h_cab = faixa("cabecalho")
+        largura_header = col_w(6) if com_slicers else col_w(12)
         self.texto(
             "titulo",
-            24,
-            6,
+            col_x(1),
+            y_cab,
             largura_header,
-            76,
+            h_cab,
             [
-                {
-                    "textRuns": [
-                        {
-                            "value": self.eyebrow,
-                            "textStyle": {
-                                "fontWeight": "bold",
-                                "fontSize": "7.5pt",
-                                "color": "#0D9488",
-                            },
-                        }
-                    ]
-                },
                 {
                     "textRuns": [
                         {
                             "value": self.titulo,
                             "textStyle": {
+                                "fontFamily": TOKENS["fonte"]["powerbi_forte"],
                                 "fontWeight": "bold",
-                                "fontSize": "14pt",
-                                "color": "#0F172A",
+                                "fontSize": f"{TIPO_PBI['largeTitle']}pt",
+                                "color": TEMA_CLARO["ink"],
                             },
                         }
                     ]
@@ -967,59 +1007,91 @@ class Pagina:
                     "textRuns": [
                         {
                             "value": self.subtitulo,
-                            "textStyle": {"fontSize": "8pt", "color": "#64748B"},
+                            "textStyle": {
+                                "fontFamily": TOKENS["fonte"]["powerbi"],
+                                "fontSize": f"{TIPO_PBI['label']}pt",
+                                "color": TEMA_CLARO["ink_2"],
+                            },
                         }
                     ]
                 },
             ],
         )
         if com_slicers:
-            for nome_slicer, sx, campo, rotulo in (
-                ("filtro_ano", 782, coluna("dim_calendario", "ano"), "Ano"),
-                ("filtro_regiao", 944, coluna("dim_geo_uf", "regiao"), "Região"),
-                ("filtro_categoria", 1106, coluna("dim_categoria", "categoria_pt"), "Categoria"),
+            for nome_slicer, col_ini, campo, rotulo in (
+                ("filtro_ano", 7, coluna("dim_calendario", "ano"), "Ano"),
+                ("filtro_regiao", 9, coluna("dim_geo_uf", "regiao"), "Região"),
+                ("filtro_categoria", 11, coluna("dim_categoria", "categoria_pt"), "Categoria"),
             ):
                 self.adicionar(
                     nome_slicer,
-                    sx,
-                    14,
-                    150,
-                    62,
+                    col_x(col_ini),
+                    y_cab,
+                    col_w(2),
+                    h_cab,
                     "slicer",
                     papeis={"Values": [projecao(campo, rotulo)]},
-                    objetos={"data": [{"properties": {"mode": texto_literal("Dropdown")}}]},
+                    objetos={
+                        "data": [{"properties": {"mode": texto_literal("Dropdown")}}],
+                        "header": [{"properties": {"textSize": literal("7D")}}],
+                        "items": [{"properties": {"textSize": literal("8D")}}],
+                    },
+                    container={"padding": padding_container(0, 0, 8, 8)},
                     sincronia=nome_slicer,
                 )
-        # Régua horizontal editorial (único basicShape da página, não sobrepõe nenhum cartão).
-        self.adicionar(
-            "regua",
-            24,
-            84,
-            1232,
-            1,
-            "basicShape",
-            objetos={
-                "general": [{"properties": {"shapeType": texto_literal("line")}}],
-                "line": [{"properties": {"lineColor": cor_solida("#E2E8F0"), "weight": literal("1D")}}],
-            },
-        )
 
     def rodape(self, texto_extra: str = "") -> None:
-        texto = f"{RODAPE_TEXTO}{texto_extra}"
+        y_rod, h_rod = faixa("rodape")
+        texto_fontes = f"{RODAPE_FONTES}{texto_extra}"
         self.texto(
-            "rodape",
-            24,
-            688,
-            1232,
-            28,
-            [{"textRuns": [{"value": texto, "textStyle": {"fontSize": "7.5pt", "color": "#94A3B8"}}]}],
+            "rodape_fontes",
+            col_x(1),
+            y_rod,
+            col_w(9),
+            h_rod,
+            [
+                {
+                    "textRuns": [
+                        {
+                            "value": texto_fontes,
+                            "textStyle": {
+                                "fontFamily": TOKENS["fonte"]["powerbi"],
+                                "fontSize": f"{TIPO_PBI['nota']}pt",
+                                "color": TEMA_CLARO["ink_3"],
+                            },
+                        }
+                    ]
+                }
+            ],
+        )
+        self.texto(
+            "rodape_assinatura",
+            col_x(10),
+            y_rod,
+            col_w(3),
+            h_rod,
+            [
+                {
+                    "horizontalTextAlignment": "right",
+                    "textRuns": [
+                        {
+                            "value": RODAPE_ASSINATURA,
+                            "textStyle": {
+                                "fontFamily": TOKENS["fonte"]["powerbi"],
+                                "fontSize": f"{TIPO_PBI['nota']}pt",
+                                "color": TEMA_CLARO["ink_3"],
+                            },
+                        }
+                    ],
+                }
+            ],
         )
 
 
 def kpi_card(
     pagina: Pagina,
     nome: str,
-    x: int,
+    col_inicio: int,
     medida_nome: str,
     rotulo: str,
     *,
@@ -1028,20 +1100,15 @@ def kpi_card(
     subtitulo_cor_medida: str | None = None,
     subtitulo_cor_hex: str | None = None,
     unidades: str | None = None,
-    cor_valor: str | None = None,
-    fundo: str | None = None,
-    borda: str | None = None,
 ) -> None:
-    """Um único visual `card` por KPI (DESIGN_SPEC §2.5 — zero caixas sobrepostas)."""
-    lbl_props: dict = {"fontSize": literal("22D")}
+    """Cartão de KPI 296x80 (3 colunas) na faixa kpis (y=72, h=80), sempre com valor em ink."""
+    y_kpi, h_kpi = faixa("kpis")
+    lbl_props: dict = {"fontSize": literal(f"{TIPO_PBI['callout']}D")}
     if unidades is not None:
         lbl_props["labelDisplayUnits"] = literal(unidades)
-    if cor_valor:
-        lbl_props["color"] = cor_solida(cor_valor)
-
     objetos = {"labels": [{"properties": lbl_props}]}
 
-    sub_props: dict = {"show": literal("true")}
+    sub_props: dict = {"show": literal("true"), "fontSize": literal(f"{TIPO_PBI['nota']}D")}
     if subtitulo_medida:
         sub_props["text"] = {"expr": medida(subtitulo_medida)}
     elif subtitulo:
@@ -1055,22 +1122,17 @@ def kpi_card(
         sub_props["fontColor"] = cor_solida(subtitulo_cor_hex)
 
     container: dict = {
+        "padding": padding_container(6, 6, 14, 14),
         "title": [{"properties": {"show": literal("true"), "text": texto_literal(rotulo)}}],
         "subTitle": [{"properties": sub_props}],
     }
-    if fundo:
-        container["background"] = [{"properties": {"show": literal("true"), "color": cor_solida(fundo)}}]
-    if borda:
-        container["border"] = [
-            {"properties": {"show": literal("true"), "color": cor_solida(borda), "radius": literal("8D")}}
-        ]
 
     pagina.adicionar(
         nome,
-        x,
-        96,
-        192,
-        96,
+        col_x(col_inicio),
+        y_kpi,
+        col_w(3),
+        h_kpi,
         "card",
         papeis={"Values": [projecao(medida(medida_nome))]},
         objetos=objetos,
@@ -1079,179 +1141,156 @@ def kpi_card(
 
 
 # ---------------------------------------------------------------------------------------------
-# As 4 páginas (coordenadas exatas de docs/DESIGN_SPEC.md §3)
+# As 4 páginas (grade exata 1280x720 de marca/REGRAS.md e títulos dinâmicos DAX fx)
 
 
 def pagina_visao_executiva() -> Pagina:
     p = Pagina(
         "visao_executiva",
-        "Visão Executiva & Macro",
-        "01 · VISÃO EXECUTIVA & MACRO",
-        "Crescimento real, não só inflação",
-        "GMV nominal vs. deflacionado pelo IPCA (BCB SGS 433), com Selic como pano de fundo do crédito ao consumo.",
+        "Visão executiva",
+        "Visão executiva e macroeconomia",
+        "GMV real a preços de out/2018 (IPCA BCB SGS 433) · comparação jan–ago/2018 vs. 2017",
     )
     p.cabecalho(com_slicers=True)
 
-    # Faixa de 6 KPIs (y=96, h=96, w=192, gutter=16)
+    # Faixa KPIs (y=72, h=80): 4 cartões de 3 colunas (296x80)
     kpi_card(
-        p, "kpi_gmv_nominal", 24, "GMV Nominal", "GMV NOMINAL",
-        subtitulo_medida="Delta GMV Nominal Texto", subtitulo_cor_hex="#1E3A5F",
-    )
-    kpi_card(
-        p, "kpi_gmv_real", 232, "GMV Real IPCA", "GMV REAL (IPCA)",
+        p, "kpi_gmv_real", 1, "GMV Real IPCA", "GMV real (IPCA)",
         subtitulo_medida="Delta GMV Real Texto", subtitulo_cor_medida="Cor Delta GMV Real",
     )
     kpi_card(
-        p, "kpi_pedidos", 440, "Pedidos Entregues", "PEDIDOS ENTREGUES",
-        subtitulo_medida="Delta Pedidos Texto", subtitulo_cor_hex="#0D9488", unidades="1D",
+        p, "kpi_pedidos", 4, "Pedidos Entregues", "Pedidos entregues",
+        subtitulo_medida="Delta Pedidos Texto", subtitulo_cor_medida="Cor Delta Pedidos",
+        unidades="1D",
     )
     kpi_card(
-        p, "kpi_ticket_real", 648, "Ticket Médio Real", "TICKET MÉDIO REAL",
-        subtitulo="R$ constantes out/2018", unidades="1D",
+        p, "kpi_ticket_real", 7, "Ticket Médio Real", "Ticket médio real",
+        subtitulo_medida="Subtítulo Ticket Real", unidades="1D",
     )
     kpi_card(
-        p, "kpi_nota", 856, "Nota Média", "NOTA MÉDIA",
-        subtitulo="escala 1–5 (entregues)", unidades="1D",
-    )
-    kpi_card(
-        p, "kpi_no_prazo", 1064, "% Entregas no Prazo", "% NO PRAZO (SLA)",
-        subtitulo="96.470 entregas válidas", subtitulo_cor_hex="#0D9488",
+        p, "kpi_no_prazo", 10, "% Entregas no Prazo", "Entregas no prazo",
+        subtitulo_medida="Subtítulo SLA Nota",
     )
 
-    # Visual-herói: Tendência mensal Nominal vs Real (x=24, y=208, w=816, h=288)
+    y_a, h_a = faixa("linha_a")
+    y_b, h_b = faixa("linha_b")
+
+    # Linha A (8 + 4 colunas): Tendência mensal GMV Real vs. Nominal + Selic & IPCA 12m
     p.adicionar(
         "tendencia_gmv",
-        24,
-        208,
-        816,
-        288,
+        col_x(1),
+        y_a,
+        col_w(8),
+        h_a,
         "lineChart",
         papeis={
             "Category": [projecao(coluna("dim_calendario", "mes_ano_pt"), "Mês")],
             "Y": [
-                projecao(medida("GMV Nominal"), "GMV Nominal"),
-                projecao(medida("GMV Real IPCA"), "GMV Real (IPCA)"),
+                projecao(medida("GMV Real IPCA"), "GMV real (IPCA)"),
+                projecao(medida("GMV Nominal"), "GMV nominal"),
             ],
         },
         ordem=[(coluna("dim_calendario", "mes_ano_pt"), "Ascending")],
         objetos={
             "dataPoint": [
-                {"properties": {"fill": cor_solida("#1E3A5F")}, "selector": {"metadata": "Medidas.GMV Nominal"}},
-                {"properties": {"fill": cor_solida("#0D9488")}, "selector": {"metadata": "Medidas.GMV Real IPCA"}},
+                {"properties": {"fill": cor_solida(COR_ACENTO)}, "selector": {"metadata": "Medidas.GMV Real IPCA"}},
+                {"properties": {"fill": cor_solida(TEMA_CLARO["mark_muted"])}, "selector": {"metadata": "Medidas.GMV Nominal"}},
             ],
             "labels": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "GMV real cresce 135,9% em Jan–Ago 2018 vs 2017 — inflação explica só 7,6 p.p.",
-            "R$ a preços constantes de out/2018 (IPCA). Navy = nominal, teal = real.",
+        container=cabecalho_visual_fx(
+            "Título Tendência GMV",
+            "R$ milhões por mês · real a preços de out/2018 em azul, nominal em cinza",
         ),
     )
 
-    # Macro BCB SGS: IPCA 12m & Selic (x=856, y=208, w=400, h=288) — eixo contínuo Scalar (26 meses sem rolagem)
     p.adicionar(
         "macro_ipca_selic",
-        856,
-        208,
-        400,
-        288,
+        col_x(9),
+        y_a,
+        col_w(4),
+        h_a,
         "lineChart",
         papeis={
             "Category": [projecao(coluna("dim_macro_mensal", "data_mes"), "Mês")],
             "Y": [
-                projecao(medida("IPCA 12m %"), "IPCA 12m %"),
-                projecao(medida("Selic Média %"), "Selic Meta %"),
+                projecao(medida("Selic Média %"), "Selic meta"),
+                projecao(medida("IPCA 12m %"), "IPCA 12m"),
             ],
         },
         objetos={
             "dataPoint": [
-                {"properties": {"fill": cor_solida("#D97706")}, "selector": {"metadata": "Medidas.IPCA 12m %"}},
-                {"properties": {"fill": cor_solida("#94A3B8")}, "selector": {"metadata": "Medidas.Selic Média %"}},
+                {"properties": {"fill": cor_solida(COR_ACENTO)}, "selector": {"metadata": "Medidas.Selic Média %"}},
+                {"properties": {"fill": cor_solida(COR_SERIE_2)}, "selector": {"metadata": "Medidas.IPCA 12m %"}},
             ],
             "categoryAxis": [{"properties": {"axisType": texto_literal("Scalar")}}],
             "labels": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "Juros em queda de 14,25% para 6,50% no período",
-            "Selic meta média mensal e IPCA acumulado 12m (BCB SGS 432/433).",
+        container=cabecalho_visual_fx(
+            "Título Macro IPCA Selic",
+            "% a.a. e acumulado 12m · BCB SGS 432 e 433",
         ),
     )
 
-    # Apoio 1: GMV Real por Região (x=24, y=512, w=400, h=172 — todas as 5 regiões sem rolagem)
+    # Linha B (6 + 6 colunas): GMV Real por Região + Ticket Médio Real por Trimestre
     p.adicionar(
         "gmv_regiao",
-        24,
-        512,
-        400,
-        172,
+        col_x(1),
+        y_b,
+        col_w(6),
+        h_b,
         "clusteredBarChart",
         papeis={
             "Category": [projecao(coluna("dim_geo_uf", "regiao"), "Região")],
-            "Y": [projecao(medida("GMV Real IPCA"), "GMV Real")],
+            "Y": [projecao(medida("GMV Real IPCA"), "GMV real")],
         },
         ordem=[(medida("GMV Real IPCA"), "Descending")],
         objetos={
-            "dataPoint": [{"properties": {"fill": cor_solida("#1E3A5F")}}],
-            "categoryAxis": [{"properties": {"fontSize": literal("8D"), "innerPadding": literal("8L")}}],
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Região Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
+            "categoryAxis": [{"properties": {"innerPadding": literal("12L")}}],
             "valueAxis": [{"properties": {"show": literal("false")}}],
-            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D")}}],
+            "labels": [{"properties": {"show": literal("true"), "labelPosition": texto_literal("OutsideEnd")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container={
-            "title": [{"properties": {"show": literal("true"), "text": texto_literal("Sudeste concentra 64,6% do GMV real"), "fontSize": literal("10D")}}],
-            "subTitle": [{"properties": {"show": literal("false")}}],
-        },
+        container=cabecalho_visual_fx(
+            "Título GMV Região",
+            "R$ milhões a preços de out/2018 · líder destacada em azul",
+        ),
     )
 
-    # Apoio 2: Ticket Médio Real por Trimestre (x=440, y=512, w=400, h=172)
     p.adicionar(
         "ticket_trimestre",
-        440,
-        512,
-        400,
-        172,
+        col_x(7),
+        y_b,
+        col_w(6),
+        h_b,
         "clusteredColumnChart",
         papeis={
             "Category": [projecao(coluna("dim_calendario", "trimestre_curto"), "Trimestre")],
-            "Y": [projecao(medida("Ticket Médio Real"), "Ticket Real")],
+            "Y": [projecao(medida("Ticket Médio Real"), "Ticket real")],
         },
         ordem=[(coluna("dim_calendario", "trimestre_curto"), "Ascending")],
         objetos={
-            "dataPoint": [{"properties": {"fill": cor_solida("#0D9488")}}],
-            "categoryAxis": [{"properties": {"fontSize": literal("8D")}}],
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Trimestre Período")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
             "valueAxis": [{"properties": {"show": literal("false")}}],
-            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D")}}],
+            "labels": [{"properties": {"show": literal("true"), "labelPosition": texto_literal("OutsideEnd")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual("Ticket médio real estável (R$ 158–174) em 2017–2018"),
+        container=cabecalho_visual_fx(
+            "Título Ticket Trimestre",
+            "R$ de out/2018 por pedido entregue · 2017 em cinza, 2018 em azul",
+        ),
         filtros=[filtro_entre("trimestres_cheios", coluna("dim_calendario", "trimestre_num"), "20171L", "20183L")],
-    )
-
-    # Apoio 3: Cartão narrativo Leitura Executiva (x=856, y=512, w=400, h=172)
-    p.texto(
-        "leitura_executiva",
-        856,
-        512,
-        400,
-        172,
-        [
-            {"textRuns": [{"value": "Leitura executiva", "textStyle": {"fontWeight": "bold", "fontSize": "11pt", "color": "#0F172A"}}]},
-            {"textRuns": [
-                {"value": "▲ Volume: ", "textStyle": {"fontWeight": "bold", "fontSize": "9pt", "color": "#0D9488"}},
-                {"value": "96.478 entregas somam R$ 16,0 mi reais (+135,9% Jan–Ago 18/17).", "textStyle": {"fontSize": "9pt", "color": "#334155"}},
-            ]},
-            {"textRuns": [
-                {"value": "● Macro: ", "textStyle": {"fontWeight": "bold", "fontSize": "9pt", "color": "#D97706"}},
-                {"value": "Selic recuou 7,75 p.p. e IPCA 12m caiu de 8,48% para 4,56%.", "textStyle": {"fontSize": "9pt", "color": "#334155"}},
-            ]},
-            {"textRuns": [
-                {"value": "▼ Risco: ", "textStyle": {"fontWeight": "bold", "fontSize": "9pt", "color": "#DC2626"}},
-                {"value": "atraso derruba nota de 4,29★ para 2,27★ — maior detrator (pág. 2).", "textStyle": {"fontSize": "9pt", "color": "#334155"}},
-            ]},
-        ],
-        container={
-            "background": [{"properties": {"show": literal("true"), "color": cor_solida("#FFFFFF")}}],
-            "border": [{"properties": {"show": literal("true"), "color": cor_solida("#E2E8F0"), "radius": literal("8D")}}],
-        },
     )
 
     p.rodape()
@@ -1261,32 +1300,45 @@ def pagina_visao_executiva() -> Pagina:
 def pagina_logistica_sla() -> Pagina:
     p = Pagina(
         "logistica_sla",
-        "Logística, SLA & Cliente",
-        "02 · LOGÍSTICA, SLA & CLIENTE",
-        "Atraso é o que mais destrói a satisfação",
-        "Pedidos entregues com data real válida (96.470). Atraso = entrega real após a data estimada informada ao cliente.",
+        "Logística e SLA",
+        "Logística, SLA e avaliação do cliente",
+        "Pedidos entregues com data real válida (96.470) · atraso = entrega após a data estimada",
     )
     p.cabecalho(com_slicers=True)
 
-    # Faixa de 6 KPIs
-    kpi_card(p, "kpi_prazo_medio", 24, "Prazo Médio Entrega (d)", "PRAZO MÉDIO", subtitulo="compra até entrega", unidades="1D")
-    kpi_card(p, "kpi_no_prazo", 232, "% Entregas no Prazo", "% NO PRAZO", subtitulo="89.936 no prazo", subtitulo_cor_hex="#0D9488")
-    kpi_card(p, "kpi_atraso_medio", 440, "Atraso Médio quando Atrasa (d)", "ATRASO MÉDIO", subtitulo="quando há atraso", subtitulo_cor_hex="#DC2626", unidades="1D")
-    kpi_card(p, "kpi_nota_no_prazo", 648, "Nota Média no Prazo", "NOTA NO PRAZO", subtitulo="62,3% dão 5★", subtitulo_cor_hex="#0D9488", unidades="1D")
-    kpi_card(p, "kpi_nota_atrasado", 856, "Nota Média Atrasado", "NOTA ATRASADO", subtitulo="queda de -2,02★", subtitulo_cor_hex="#DC2626", cor_valor="#DC2626", unidades="1D")
-    kpi_card(p, "kpi_frete_pct", 1064, "Frete % do GMV", "FRETE % DO GMV", subtitulo="R$ 2,20 mi nominais")
+    # Faixa KPIs (y=72, h=80): 4 cartões de 3 colunas (296x80)
+    kpi_card(
+        p, "kpi_prazo_medio", 1, "Prazo Médio Entrega (d)", "Prazo médio de entrega",
+        subtitulo_medida="Subtítulo Prazo Médio", unidades="1D",
+    )
+    kpi_card(
+        p, "kpi_no_prazo", 4, "% Entregas no Prazo", "Entregas no prazo",
+        subtitulo_medida="Subtítulo SLA Contagem",
+    )
+    kpi_card(
+        p, "kpi_nota_no_prazo", 7, "Nota Média no Prazo", "Nota média no prazo",
+        subtitulo="escala 1 a 5 · entregas até o prazo", unidades="1D",
+    )
+    kpi_card(
+        p, "kpi_nota_atrasado", 10, "Nota Média Atrasado", "Nota média com atraso",
+        subtitulo_medida="Subtítulo Nota Atraso", subtitulo_cor_medida="Cor Impacto Atraso",
+        unidades="1D",
+    )
 
-    # Visual-herói: Nota por Faixa de Atraso (x=24, y=208, w=600, h=288)
+    y_a, h_a = faixa("linha_a")
+    y_b, h_b = faixa("linha_b")
+
+    # Linha A (6 + 6 colunas): Nota por Faixa de Atraso + Top 8 UFs por Penetração per capita
     p.adicionar(
         "nota_por_atraso",
-        24,
-        208,
-        600,
-        288,
+        col_x(1),
+        y_a,
+        col_w(6),
+        h_a,
         "clusteredColumnChart",
         papeis={
             "Category": [projecao(coluna("dim_faixa_atraso", "faixa_atraso"), "Faixa de atraso")],
-            "Y": [projecao(medida("Nota Média"), "Nota Média")],
+            "Y": [projecao(medida("Nota Média"), "Nota média")],
         },
         ordem=[(coluna("dim_faixa_atraso", "faixa_atraso"), "Ascending")],
         objetos={
@@ -1296,24 +1348,76 @@ def pagina_logistica_sla() -> Pagina:
                     "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
                 }
             ],
-            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("10D")}}],
+            "labels": [{"properties": {"show": literal("true")}}],
             "valueAxis": [{"properties": {"start": literal("1D"), "end": literal("5D")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "Com 8+ dias de atraso, a nota despenca de 4,29★ para 1,67★–1,72★",
-            "Nota média da avaliação (1–5) por faixa ordinal de atraso na entrega.",
+        container=cabecalho_visual_fx(
+            "Título Nota Atraso",
+            "Nota média de 1 a 5 por faixa ordinal de atraso na entrega",
         ),
         filtros=[filtro_entre("cinco_faixas", coluna("dim_faixa_atraso", "ordem"), "1L", "5L")],
     )
 
-    # Prazo médio por região (x=24, y=512, w=600, h=172 — todas as 5 regiões visíveis sem rolagem)
+    p.adicionar(
+        "penetracao_uf",
+        col_x(7),
+        y_a,
+        col_w(6),
+        h_a,
+        "clusteredBarChart",
+        papeis={
+            "Category": [projecao(coluna("dim_geo_uf", "uf"), "UF")],
+            "Y": [projecao(medida("GMV Real / 100 mil hab."), "GMV/100 mil hab.")],
+            "Tooltips": [
+                projecao(medida("Pedidos Entregues"), "Pedidos"),
+                projecao(medida("% Entregas no Prazo"), "% no prazo"),
+                projecao(medida("Prazo Médio Entrega (d)"), "Prazo (d)"),
+            ],
+        },
+        ordem=[(medida("GMV Real / 100 mil hab."), "Descending")],
+        objetos={
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor UF Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
+            "categoryAxis": [{"properties": {"innerPadding": literal("10L")}}],
+            "valueAxis": [{"properties": {"show": literal("false")}}],
+            "labels": [
+                {
+                    "properties": {
+                        "show": literal("true"),
+                        "fontSize": literal("8D"),
+                        "labelDisplayUnits": literal("1D"),
+                        "labelPosition": texto_literal("OutsideEnd"),
+                    }
+                }
+            ],
+            "legend": [{"properties": {"show": literal("false")}}],
+        },
+        container=cabecalho_visual_fx(
+            "Título Penetração UF",
+            "Top 8 UFs por GMV real a cada 100 mil hab. · IBGE 2018",
+        ),
+        filtros=[
+            filtro_top_n(
+                "top8_ufs",
+                coluna("dim_geo_uf", "uf"),
+                medida("GMV Real / 100 mil hab."),
+                8,
+            )
+        ],
+    )
+
+    # Linha B (6 + 6 colunas): Prazo Médio por Região + Tabela detalhada das 27 UFs
     p.adicionar(
         "prazo_regiao",
-        24,
-        512,
-        600,
-        172,
+        col_x(1),
+        y_b,
+        col_w(6),
+        h_b,
         "clusteredBarChart",
         papeis={
             "Category": [projecao(coluna("dim_geo_uf", "regiao"), "Região")],
@@ -1321,19 +1425,23 @@ def pagina_logistica_sla() -> Pagina:
         },
         ordem=[(medida("Prazo Médio Entrega (d)"), "Descending")],
         objetos={
-            "dataPoint": [{"properties": {"fill": cor_solida("#1E3A5F")}}],
-            "categoryAxis": [{"properties": {"fontSize": literal("8D"), "innerPadding": literal("8L")}}],
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Prazo Região Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
+            "categoryAxis": [{"properties": {"innerPadding": literal("12L")}}],
             "valueAxis": [{"properties": {"show": literal("false")}}],
-            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D")}}],
+            "labels": [{"properties": {"show": literal("true"), "labelPosition": texto_literal("OutsideEnd")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container={
-            "title": [{"properties": {"show": literal("true"), "text": texto_literal("Norte e Nordeste esperam 1,9× mais que o Sudeste (dias corridos)"), "fontSize": literal("10D")}}],
-            "subTitle": [{"properties": {"show": literal("false")}}],
-        },
+        container=cabecalho_visual_fx(
+            "Título Prazo Região",
+            "Dias corridos entre compra e entrega real · média por região",
+        ),
     )
 
-    # Tabela das 27 UFs com GMV / 100k hab (IBGE) e SLA colorido (x=640, y=208, w=616, h=476)
     colunas_uf = [
         (coluna("dim_geo_uf", "uf"), "UF"),
         (coluna("dim_geo_uf", "regiao"), "Região"),
@@ -1345,14 +1453,15 @@ def pagina_logistica_sla() -> Pagina:
     ]
     p.adicionar(
         "tabela_uf",
-        640,
-        208,
-        616,
-        476,
+        col_x(7),
+        y_b,
+        col_w(6),
+        h_b,
         "tableEx",
         papeis={"Values": [projecao(campo, rotulo) for campo, rotulo in colunas_uf]},
         ordem=[(medida("GMV Real / 100 mil hab."), "Descending")],
         objetos={
+            "grid": [{"properties": {"textSize": literal("8D"), "rowPadding": literal("2L")}}],
             "total": [{"properties": {"totals": literal("true")}}],
             "values": [
                 {
@@ -1364,115 +1473,126 @@ def pagina_logistica_sla() -> Pagina:
                 }
             ],
         },
-        container=cabecalho_visual(
-            "Onde o e-commerce penetra mais — e onde entrega pior",
-            "GMV real por 100 mil habitantes (IBGE 2018) e SLA por UF do cliente (≥92% teal, <85% coral).",
+        container=cabecalho_visual_fx(
+            "Título Tabela UF",
+            "GMV real por 100 mil hab. e SLA · verde ≥ 92%, vermelho < 85%",
         ),
     )
 
-    p.rodape(" · População oficial: IBGE Estimativa 2018")
+    p.rodape()
     return p
 
 
 def pagina_comercial() -> Pagina:
     p = Pagina(
         "comercial",
-        "Comercial & Clientes",
-        "03 · COMERCIAL & CLIENTES",
-        "Poucas categorias e poucos vendedores carregam a receita",
-        "Pareto de categorias, mix de pagamento, parcelamento, retenção por coorte e concentração de vendedores.",
+        "Comercial e clientes",
+        "Comercial, categorias e clientes",
+        "Concentração de categorias e vendedores no grão de item · pagamentos, parcelas e retenção por coorte",
     )
     p.cabecalho(com_slicers=True)
 
-    # Faixa de 6 KPIs
-    kpi_card(p, "kpi_ticket", 24, "Ticket Médio Real", "TICKET MÉDIO REAL", subtitulo="R$ out/2018", unidades="1D")
-    kpi_card(p, "kpi_itens_pedido", 232, "Itens por Pedido", "ITENS / PEDIDO", subtitulo="110.197 itens", unidades="1D")
-    kpi_card(p, "kpi_pct_cartao", 440, "% Pedidos Cartão", "% PEDIDOS CARTÃO", subtitulo="78,5% do GMV")
-    kpi_card(p, "kpi_parcelas", 648, "Parcelas Médias (Cartão)", "PARCELAS MÉDIAS", subtitulo="67,9% parcelados", subtitulo_cor_hex="#D97706", unidades="1D")
-    kpi_card(p, "kpi_recompra", 856, "% Clientes Recompra", "% RECOMPRA", subtitulo="2.801 de 93.358", subtitulo_cor_hex="#0D9488")
-    kpi_card(p, "kpi_top_vendedores", 1064, "% GMV Top 10% Vendedores", "TOP 10% VENDEDORES", subtitulo="risco de concentração", subtitulo_cor_hex="#DC2626", cor_valor="#DC2626")
+    # Faixa KPIs (y=72, h=80): 4 cartões de 3 colunas (296x80)
+    kpi_card(
+        p, "kpi_ticket", 1, "Ticket Médio Real", "Ticket médio real",
+        subtitulo_medida="Subtítulo Ticket Itens", unidades="1D",
+    )
+    kpi_card(
+        p, "kpi_pct_cartao", 4, "% Pedidos Cartão", "Pedidos no cartão",
+        subtitulo_medida="Subtítulo Cartão Parcelas",
+    )
+    kpi_card(
+        p, "kpi_recompra", 7, "% Clientes Recompra", "Clientes com recompra",
+        subtitulo_medida="Subtítulo Recompra",
+    )
+    kpi_card(
+        p, "kpi_top_vendedores", 10, "% GMV Top 10% Vendedores", "GMV no top 10% vendedores",
+        subtitulo_medida="Subtítulo Top Vendedores",
+    )
 
-    # Pareto de Categorias Top 15 (x=24, y=208, w=744, h=260)
+    y_a, h_a = faixa("linha_a")
+    y_b, h_b = faixa("linha_b")
+
+    # Linha A (8 + 4 colunas): Top 8 Categorias (eixo único, sem eixo Y duplo!) + Decis de Vendedores
     p.adicionar(
         "pareto_categorias",
-        24,
-        208,
-        744,
-        260,
-        "lineClusteredColumnComboChart",
+        col_x(1),
+        y_a,
+        col_w(8),
+        h_a,
+        "clusteredBarChart",
         papeis={
             "Category": [projecao(coluna("dim_categoria", "categoria_pt"), "Categoria")],
-            "Y": [projecao(medida("GMV Itens Real IPCA"), "GMV Real (IPCA)")],
-            "Y2": [projecao(medida("% Acumulado GMV Categorias"), "% Acumulado")],
+            "Y": [projecao(medida("GMV Itens Real IPCA"), "GMV real")],
+            "Tooltips": [
+                projecao(medida("% GMV Categorias"), "% do GMV"),
+                projecao(medida("% Acumulado GMV Categorias"), "% acumulado"),
+            ],
         },
         ordem=[(medida("GMV Itens Real IPCA"), "Descending")],
         objetos={
             "dataPoint": [
-                {"properties": {"fill": cor_solida("#1E3A5F")}, "selector": {"metadata": "Medidas.GMV Itens Real IPCA"}},
-                {"properties": {"fill": cor_solida("#D97706")}, "selector": {"metadata": "Medidas.% Acumulado GMV Categorias"}},
+                {
+                    "properties": {"fill": cor_medida("Cor Categoria Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
             ],
-            "y2Axis": [{"properties": {"show": literal("true"), "start": literal("0D"), "end": literal("1D")}}],
-            "labels": [{"properties": {"show": literal("false")}}],
+            "categoryAxis": [{"properties": {"maxMarginFactor": literal("36L"), "innerPadding": literal("10L")}}],
+            "valueAxis": [{"properties": {"show": literal("false")}}],
+            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D"), "labelPosition": texto_literal("OutsideEnd")}}],
+            "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "18 categorias somam 80% do GMV real (top 15 = 76,5%)",
-            "Barras = GMV real de itens (R$ out/2018); linha âmbar = % acumulado sobre 74 categorias.",
+        container=cabecalho_visual_fx(
+            "Título Pareto Categorias",
+            "Top 8 por GMV real de itens (R$ de out/2018) · % acumulado na dica",
         ),
         filtros=[
             filtro_top_n(
-                "top15_categorias",
+                "top8_categorias",
                 coluna("dim_categoria", "categoria_pt"),
                 medida("GMV Itens Real IPCA"),
-                15,
+                8,
             )
         ],
     )
 
-    # Matriz Coorte de Recompra (x=24, y=484, w=744, h=200)
     p.adicionar(
-        "coorte_recompra",
-        24,
-        484,
-        744,
-        200,
-        "pivotTable",
+        "concentracao_vendedores",
+        col_x(9),
+        y_a,
+        col_w(4),
+        h_a,
+        "clusteredColumnChart",
         papeis={
-            "Rows": [projecao(coluna("fato_pedidos", "coorte_mes"), "Coorte")],
-            "Columns": [projecao(coluna("fato_pedidos", "mes_coorte_label"), "Mês")],
-            "Values": [projecao(medida("% Retenção Coorte"), "Retenção")],
+            "Category": [projecao(coluna("dim_vendedor", "decil_gmv"), "Decil")],
+            "Y": [projecao(medida("% GMV Vendedores"), "% GMV")],
         },
+        ordem=[(coluna("dim_vendedor", "decil_gmv"), "Ascending")],
         objetos={
-            "grid": [{"properties": {"textSize": literal("8D"), "rowPadding": literal("2L")}}],
-            "subTotals": [
-                {"properties": {"rowSubtotals": literal("false"), "columnSubtotals": literal("false")}}
-            ],
-            "values": [
+            "dataPoint": [
                 {
-                    "properties": {"backColor": cor_medida("Cor Retenção Coorte")},
-                    "selector": {
-                        "data": [{"dataViewWildcard": {"matchingOption": 1}}],
-                        "metadata": "Medidas.% Retenção Coorte",
-                    },
+                    "properties": {"fill": cor_medida("Cor Decil Vendedores")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
                 }
             ],
+            "valueAxis": [{"properties": {"show": literal("false")}}],
+            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D"), "labelPosition": texto_literal("OutsideEnd")}}],
+            "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "Recompra é rara: só 3,0% dos clientes voltam (1,4% em até 6 meses)",
-            "% de clientes únicos da coorte que compram novamente nos meses M+1 a M+6.",
+        container=cabecalho_visual_fx(
+            "Título Concentração Vendedores",
+            "% do GMV real por decil de vendedores (D1 = top 10%)",
         ),
-        filtros=[
-            filtro_entre("meses_1_a_6", coluna("fato_pedidos", "meses_desde_coorte"), "1L", "6L"),
-            filtro_entre("coortes_cheias", coluna("fato_pedidos", "coorte_mes_num"), "201701L", "201807L"),
-        ],
+        filtros=[filtro_entre("decis_1_10", coluna("dim_vendedor", "decil_ordem"), "1L", "10L")],
     )
 
-    # Mix de Pagamento (x=784, y=208, w=472, h=156 — 4 meios principais sem linha 0,0% e sem rolagem)
+    # Linha B (4 + 4 + 4 colunas): Mix de Pagamento + Parcelas no Cartão + Coorte de Recompra
     p.adicionar(
         "mix_pagamento",
-        784,
-        208,
-        472,
-        156,
+        col_x(1),
+        y_b,
+        col_w(4),
+        h_b,
         "clusteredBarChart",
         papeis={
             "Category": [projecao(coluna("fato_pedidos", "tipo_pagamento_pt"), "Pagamento")],
@@ -1480,13 +1600,21 @@ def pagina_comercial() -> Pagina:
         },
         ordem=[(medida("% GMV Pagamento"), "Descending")],
         objetos={
-            "dataPoint": [{"properties": {"fill": cor_solida("#1E3A5F")}}],
-            "categoryAxis": [{"properties": {"fontSize": literal("8D"), "innerPadding": literal("8L")}}],
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Pagamento Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
+            "categoryAxis": [{"properties": {"maxMarginFactor": literal("36L"), "innerPadding": literal("14L")}}],
             "valueAxis": [{"properties": {"show": literal("false")}}],
-            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D")}}],
+            "labels": [{"properties": {"show": literal("true"), "fontSize": literal("8D"), "labelPosition": texto_literal("OutsideEnd")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual("Cartão domina: 78,5% do GMV real"),
+        container=cabecalho_visual_fx(
+            "Título Mix Pagamento",
+            "% do GMV real entregue · 4 meios principais",
+        ),
         filtros=[
             filtro_em(
                 "pagamentos_validos",
@@ -1496,13 +1624,12 @@ def pagina_comercial() -> Pagina:
         ],
     )
 
-    # Distribuição de Parcelas no Cartão (x=784, y=380, w=472, h=144)
     p.adicionar(
         "parcelas",
-        784,
-        380,
-        472,
-        144,
+        col_x(5),
+        y_b,
+        col_w(4),
+        h_b,
         "clusteredColumnChart",
         papeis={
             "Category": [projecao(coluna("fato_pedidos", "faixa_parcelas"), "Parcelas")],
@@ -1519,35 +1646,48 @@ def pagina_comercial() -> Pagina:
             "labels": [{"properties": {"show": literal("false")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual("67,9% dos pedidos no cartão são parcelados"),
+        container=cabecalho_visual_fx(
+            "Título Parcelas",
+            "Pedidos no cartão · 1x à vista em cinza, parcelados em azul",
+        ),
         filtros=[filtro_entre("parcelas_1_10", coluna("fato_pedidos", "faixa_parcelas_ordem"), "1L", "10L")],
     )
 
-    # Concentração de Vendedores por Decil (x=784, y=540, w=472, h=144)
     p.adicionar(
-        "concentracao_vendedores",
-        784,
-        540,
-        472,
-        144,
-        "clusteredColumnChart",
+        "coorte_recompra",
+        col_x(9),
+        y_b,
+        col_w(4),
+        h_b,
+        "pivotTable",
         papeis={
-            "Category": [projecao(coluna("dim_vendedor", "decil_gmv"), "Decil")],
-            "Y": [projecao(medida("% GMV Vendedores"), "% GMV")],
+            "Rows": [projecao(coluna("fato_pedidos", "coorte_mes"), "Coorte")],
+            "Columns": [projecao(coluna("fato_pedidos", "mes_coorte_label"), "Mês")],
+            "Values": [projecao(medida("% Retenção Coorte"), "Retenção")],
         },
-        ordem=[(coluna("dim_vendedor", "decil_gmv"), "Ascending")],
         objetos={
-            "dataPoint": [
+            "grid": [{"properties": {"textSize": literal("8D"), "rowPadding": literal("1L")}}],
+            "subTotals": [
+                {"properties": {"rowSubtotals": literal("false"), "columnSubtotals": literal("false")}}
+            ],
+            "values": [
                 {
-                    "properties": {"fill": cor_medida("Cor Decil Vendedores")},
-                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                    "properties": {"backColor": cor_medida("Cor Retenção Coorte")},
+                    "selector": {
+                        "data": [{"dataViewWildcard": {"matchingOption": 1}}],
+                        "metadata": "Medidas.% Retenção Coorte",
+                    },
                 }
             ],
-            "labels": [{"properties": {"show": literal("true")}}],
-            "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual("Top 10% dos vendedores (D1) = 66,3% do GMV"),
-        filtros=[filtro_entre("decis_1_10", coluna("dim_vendedor", "decil_ordem"), "1L", "10L")],
+        container=cabecalho_visual_fx(
+            "Título Coorte Recompra",
+            "% da coorte que compra de novo em M+1 a M+6",
+        ),
+        filtros=[
+            filtro_entre("meses_1_a_6", coluna("fato_pedidos", "meses_desde_coorte"), "1L", "6L"),
+            filtro_entre("coortes_cheias", coluna("fato_pedidos", "coorte_mes_num"), "201701L", "201807L"),
+        ],
     )
 
     p.rodape()
@@ -1557,60 +1697,41 @@ def pagina_comercial() -> Pagina:
 def pagina_qualidade() -> Pagina:
     p = Pagina(
         "qualidade",
-        "Qualidade & Linhagem",
-        "04 · QUALIDADE & LINHAGEM",
-        "Cada número é rastreável até a fonte",
-        "Anomalias reais encontradas na base Olist (99.441 pedidos brutos), tratamento aplicado e conferência SQL.",
+        "Qualidade e linhagem",
+        "Qualidade de dados e linhagem",
+        "Anomalias reais encontradas na base Olist (99.441 pedidos brutos), tratamento determinístico e conferência SQL",
     )
-    # Auditoria é sobre a base inteira — sem slicers (DESIGN_SPEC §2.4).
+    # Auditoria cobre a base inteira (sem slicers no cabeçalho).
     p.cabecalho(com_slicers=False)
 
-    # Faixa de 6 KPIs
-    kpi_card(p, "kpi_pedidos_brutos", 24, "Pedidos Brutos", "PEDIDOS BRUTOS", subtitulo="base Olist completa", unidades="1D")
-    kpi_card(p, "kpi_pedidos_validos", 232, "Pedidos Entregues", "ENTREGUES ANALISADOS", subtitulo="flag_entregue = 1", subtitulo_cor_hex="#0D9488", unidades="1D")
-    kpi_card(p, "kpi_pct_excluidos", 440, "% Excluídos da Análise", "% EXCLUÍDOS", subtitulo="2.963 não entregues", subtitulo_cor_hex="#D97706")
-    kpi_card(p, "kpi_anomalias", 648, "Anomalias Detectadas", "OCORRÊNCIAS AUDITADAS", subtitulo="13 regras de qualidade", subtitulo_cor_hex="#D97706", unidades="1D")
-    kpi_card(p, "kpi_reviews_dup", 856, "Reviews Duplicadas", "REVIEWS DUPLICADAS", subtitulo="deduplicadas (Q08)", subtitulo_cor_hex="#D97706", unidades="1D")
+    # Faixa KPIs (y=72, h=80): 4 cartões de 3 colunas (296x80)
     kpi_card(
-        p, "kpi_gabarito", 1064, "Selo Gabarito SQL", "CONFERÊNCIA SQL",
-        subtitulo="consultas conferem DAX", subtitulo_cor_hex="#0D9488",
-        cor_valor="#0D9488", fundo="#CCFBF1", borda="#0D9488",
+        p, "kpi_pedidos_brutos", 1, "Pedidos Brutos", "Pedidos brutos (Olist)",
+        subtitulo_medida="Subtítulo Pedidos Brutos", unidades="1D",
+    )
+    kpi_card(
+        p, "kpi_pct_excluidos", 4, "% Excluídos da Análise", "Pedidos excluídos",
+        subtitulo_medida="Subtítulo Excluídos",
+    )
+    kpi_card(
+        p, "kpi_anomalias", 7, "Anomalias Detectadas", "Ocorrências auditadas",
+        subtitulo_medida="Subtítulo Anomalias", unidades="1D",
+    )
+    kpi_card(
+        p, "kpi_gabarito", 10, "Selo Gabarito SQL", "Conferência SQL e DAX",
+        subtitulo="consultas do gabarito conferem",
     )
 
-    # Tabela Auditoria de Qualidade (x=24, y=208, w=632, h=476 — zero rolagem horizontal)
-    colunas_aud = [
-        (coluna("qualidade_auditoria", "regra"), "Regra"),
-        (coluna("qualidade_auditoria", "tabela_curta"), "Origem"),
-        (coluna("qualidade_auditoria", "linhas_afetadas"), "Linhas"),
-        (coluna("qualidade_auditoria", "pct_base_frac"), "% Base"),
-        (coluna("qualidade_auditoria", "tipo_curto"), "Tipo"),
-    ]
-    p.adicionar(
-        "tabela_auditoria",
-        24,
-        208,
-        632,
-        476,
-        "tableEx",
-        papeis={"Values": [projecao(campo, rotulo) for campo, rotulo in colunas_aud]},
-        ordem=[(coluna("qualidade_auditoria", "linhas_afetadas"), "Descending")],
-        objetos={
-            "grid": [{"properties": {"textSize": literal("8D")}}],
-            "total": [{"properties": {"totals": literal("false")}}],
-        },
-        container=cabecalho_visual(
-            "13 regras de qualidade aplicadas — nada é descartado em silêncio",
-            "Anomalias reais da base pública Olist com tratamento determinístico documentado.",
-        ),
-    )
+    y_a, h_a = faixa("linha_a")
+    y_b, h_b = faixa("linha_b")
 
-    # Gráfico de barras: Anomalias por tipo (x=672, y=208, w=584, h=230 — contagens exatas sem abreviar)
+    # Linha A (6 + 6 colunas): Top 7 Regras de Auditoria + Ocorrências por Tipo de Tratamento
     p.adicionar(
         "anomalias_tipo",
-        672,
-        208,
-        584,
-        230,
+        col_x(1),
+        y_a,
+        col_w(6),
+        h_a,
         "clusteredBarChart",
         papeis={
             "Category": [projecao(coluna("qualidade_auditoria", "regra"), "Regra")],
@@ -1618,21 +1739,109 @@ def pagina_qualidade() -> Pagina:
         },
         ordem=[(medida("Anomalias Detectadas"), "Descending")],
         objetos={
-            "dataPoint": [{"properties": {"fill": cor_solida("#D97706")}}],
-            "labels": [
-                {"properties": {"show": literal("true"), "fontSize": literal("8D"), "labelDisplayUnits": literal("1D")}}
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Anomalia Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
             ],
-            "categoryAxis": [{"properties": {"maxMarginFactor": literal("48L"), "fontSize": literal("8D")}}],
+            "labels": [
+                {
+                    "properties": {
+                        "show": literal("true"),
+                        "fontSize": literal("8D"),
+                        "labelDisplayUnits": literal("1D"),
+                        "labelPosition": texto_literal("OutsideEnd"),
+                    }
+                }
+            ],
+            "categoryAxis": [{"properties": {"maxMarginFactor": literal("48L"), "fontSize": literal("8D"), "innerPadding": literal("10L")}}],
             "valueAxis": [{"properties": {"show": literal("false")}}],
             "legend": [{"properties": {"show": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "Pedidos cancelados/não entregues são a maior exclusão (2.963)",
-            "Registros afetados por regra de auditoria na base Olist.",
+        container=cabecalho_visual_fx(
+            "Título Anomalias Tipo",
+            "Top 7 regras por registros afetados · base bruta Olist",
+        ),
+        filtros=[
+            filtro_top_n(
+                "top7_regras",
+                coluna("qualidade_auditoria", "regra"),
+                medida("Anomalias Detectadas"),
+                7,
+            )
+        ],
+    )
+
+    p.adicionar(
+        "tratamento_anomalias",
+        col_x(7),
+        y_a,
+        col_w(6),
+        h_a,
+        "clusteredBarChart",
+        papeis={
+            "Category": [projecao(coluna("qualidade_auditoria", "tipo_curto"), "Tratamento")],
+            "Y": [projecao(medida("Anomalias Detectadas"), "Registros")],
+        },
+        ordem=[(medida("Anomalias Detectadas"), "Descending")],
+        objetos={
+            "dataPoint": [
+                {
+                    "properties": {"fill": cor_medida("Cor Tratamento Destaque")},
+                    "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]},
+                }
+            ],
+            "labels": [
+                {
+                    "properties": {
+                        "show": literal("true"),
+                        "fontSize": literal("8D"),
+                        "labelDisplayUnits": literal("1D"),
+                        "labelPosition": texto_literal("OutsideEnd"),
+                    }
+                }
+            ],
+            "categoryAxis": [{"properties": {"innerPadding": literal("12L")}}],
+            "valueAxis": [{"properties": {"show": literal("false")}}],
+            "legend": [{"properties": {"show": literal("false")}}],
+        },
+        container=cabecalho_visual_fx(
+            "Título Tratamento Anomalias",
+            "Registros auditados por tipo de ação determinística",
         ),
     )
 
-    # Tabela Linhagem das Fontes (x=672, y=454, w=584, h=230)
+    # Linha B (6 + 6 colunas): Tabela Completa de Auditoria + Linhagem das Fontes Públicas
+    colunas_aud = [
+        (coluna("qualidade_auditoria", "regra"), "Regra"),
+        (coluna("qualidade_auditoria", "tabela_curta"), "Origem"),
+        (coluna("qualidade_auditoria", "linhas_afetadas"), "Linhas"),
+        (coluna("qualidade_auditoria", "pct_base_frac"), "% base"),
+        (coluna("qualidade_auditoria", "tipo_curto"), "Tipo"),
+    ]
+    p.adicionar(
+        "tabela_auditoria",
+        col_x(1),
+        y_b,
+        col_w(6),
+        h_b,
+        "tableEx",
+        papeis={"Values": [projecao(campo, rotulo) for campo, rotulo in colunas_aud]},
+        ordem=[(coluna("qualidade_auditoria", "linhas_afetadas"), "Descending")],
+        objetos={
+            "grid": [{"properties": {"textSize": literal("7.5D"), "rowPadding": literal("2L")}}],
+            "total": [{"properties": {"totals": literal("false")}}],
+        },
+        container={
+            **cabecalho_visual_fx(
+                "Título Tabela Auditoria",
+                "13 regras da base pública Olist com tratamento documentado",
+            ),
+            "padding": padding_container(10, 10, 10, 10),
+        },
+    )
+
     colunas_fontes = [
         (coluna("fontes_metadados", "fonte"), "Fonte"),
         (coluna("fontes_metadados", "arquivo_curto"), "Arquivo"),
@@ -1642,20 +1851,20 @@ def pagina_qualidade() -> Pagina:
     ]
     p.adicionar(
         "linhagem_fontes",
-        672,
-        454,
-        584,
-        230,
+        col_x(7),
+        y_b,
+        col_w(6),
+        h_b,
         "tableEx",
         papeis={"Values": [projecao(campo, rotulo) for campo, rotulo in colunas_fontes]},
         ordem=[(coluna("fontes_metadados", "registros"), "Descending")],
         objetos={
-            "grid": [{"properties": {"textSize": literal("8D")}}],
+            "grid": [{"properties": {"textSize": literal("8D"), "rowPadding": literal("2L")}}],
             "total": [{"properties": {"totals": literal("false")}}],
         },
-        container=cabecalho_visual(
-            "3 fontes públicas, sem chave de API, coleta reprodutível",
-            "17 arquivos verificados com hash SHA-256 e timestamp UTC em data/raw/manifesto_coleta.json.",
+        container=cabecalho_visual_fx(
+            "Título Linhagem Fontes",
+            "Manifesto com hash SHA-256 e timestamp UTC em data/raw/manifesto_coleta.json",
         ),
     )
 
@@ -1732,8 +1941,8 @@ def escrever_relatorio(pasta: Path) -> None:
                 "name": pag.nome,
                 "displayName": pag.display_name,
                 "displayOption": "FitToPage",
-                "height": 720,
-                "width": 1280,
+                "height": PAGINA_ALTURA,
+                "width": PAGINA_LARGURA,
             },
         )
         for visual in pag.visuais:

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "coorte_recompra",
   "position": {
-    "x": 24,
-    "y": 484,
+    "x": 856,
+    "y": 456,
     "z": 12,
-    "height": 200,
-    "width": 744,
+    "height": 224,
+    "width": 400,
     "tabOrder": 12
   },
   "visual": {
@@ -86,7 +86,7 @@
             "rowPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "2L"
+                  "Value": "1L"
                 }
               }
             }
@@ -159,8 +159,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Recompra é rara: só 3,0% dos clientes voltam (1,4% em até 6 meses)'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Coorte Recompra"
                 }
               }
             }
@@ -180,7 +185,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'% de clientes únicos da coorte que compram novamente nos meses M+1 a M+6.'"
+                  "Value": "'% da coorte que compra de novo em M+1 a M+6'"
                 }
               }
             }

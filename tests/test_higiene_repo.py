@@ -73,3 +73,62 @@ def test_readme_e_fontes_tem_atribuicoes_olist_bcb_ibge():
     assert "Banco Central" in texto and "433" in texto and "432" in texto
     assert "IBGE" in texto
     assert "MIT" in texto
+
+
+def test_padrao_bi_estrutura_arquivos_e_sem_exemplos():
+    obrigatorios = [
+        "marca/tokens.json",
+        "marca/gerar.py",
+        "marca/REGRAS.md",
+        "marca/tokens.css",
+        "marca/powerbi/tema-azul-claro.json",
+        "DESIGN.md",
+        ".unslop-ui/taste.md",
+        "AGENTS.md",
+        "GEMINI.md",
+        "docs/marca/tokens.css",
+        "docs/dados/resumo.js",
+    ]
+    for rel in obrigatorios:
+        assert (RAIZ / rel).is_file(), f"Arquivo obrigatório do Padrão BI ausente: {rel}"
+
+    assert not (RAIZ / "exemplos").exists(), "A pasta exemplos/ do Padrão BI não deve ser copiada para o projeto"
+    agents = (RAIZ / "AGENTS.md").read_text(encoding="utf-8")
+    assert "--acento azul" in agents and "azul" in agents, "AGENTS.md deve declarar o acento azul"
+    assert (RAIZ / "GEMINI.md").read_text(encoding="utf-8").strip() == "@./AGENTS.md"
+
+
+def test_padrao_bi_zero_hex_fora_de_marca_e_conformidade_docs():
+    hex6 = re.compile(r"#[0-9a-fA-F]{6}")
+    # Regra estrita: zero hex escrito à mão em docs/*.html, docs/*.css, docs/*.js, docs/DESIGN_SPEC.md, scripts/montar_pbip.py
+    alvos_zero_hex = [
+        *sorted((RAIZ / "docs").glob("*.html")),
+        *sorted((RAIZ / "docs").glob("*.css")),
+        *sorted((RAIZ / "docs").glob("*.js")),
+        RAIZ / "docs" / "DESIGN_SPEC.md",
+        RAIZ / "scripts" / "montar_pbip.py",
+    ]
+    for caminho in alvos_zero_hex:
+        achados = hex6.findall(caminho.read_text(encoding="utf-8"))
+        assert not achados, f"Hex escrito à mão fora de marca/ em {caminho.relative_to(RAIZ)}: {achados}"
+
+    # Verificação equivalente ao grep de marca/REGRAS.md em todo o repositório (*.html, *.css, *.qmd)
+    permitidos_gerados = {"marca/tokens.css", "docs/marca/tokens.css"}
+    for ext in ("*.html", "*.css", "*.qmd"):
+        for caminho in sorted(RAIZ.rglob(ext)):
+            rel = caminho.relative_to(RAIZ).as_posix()
+            if "_files/" in rel or ".git/" in rel or rel in permitidos_gerados:
+                continue
+            achados = hex6.findall(caminho.read_text(encoding="utf-8", errors="replace"))
+            assert not achados, f"Hex fora dos arquivos gerados em {rel}: {achados}"
+
+    # Conformidade .unslop-ui/taste.md em DESIGN_SPEC.md, README.md e dax/medidas.dax
+    palavras_proibidas = re.compile(r"\b(insights?|jornada|potencializar|alavancar|storytelling)\b", re.I)
+    icones_unicode = re.compile(r"[▲▼→●✓★]")
+    for rel in ("docs/DESIGN_SPEC.md", "README.md", "dax/medidas.dax"):
+        texto = (RAIZ / rel).read_text(encoding="utf-8")
+        sem_imgs = re.sub(r"!\[", "[", texto)
+        assert not palavras_proibidas.search(texto), f"Palavra proibida em {rel}: {palavras_proibidas.findall(texto)}"
+        assert not icones_unicode.search(texto), f"Ícone unicode proibido em {rel}"
+        assert "—" not in texto, f"Travessão proibido em {rel}"
+        assert "!" not in sem_imgs, f"Ponto de exclamação proibido em {rel}"

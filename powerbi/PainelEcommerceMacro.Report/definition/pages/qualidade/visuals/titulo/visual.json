@@ -3,9 +3,9 @@
   "name": "titulo",
   "position": {
     "x": 24,
-    "y": 6,
+    "y": 16,
     "z": 0,
-    "height": 76,
+    "height": 44,
     "width": 1232,
     "tabOrder": 0
   },
@@ -19,11 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "04 · QUALIDADE & LINHAGEM",
+                    "value": "Qualidade de dados e linhagem",
                     "textStyle": {
+                      "fontFamily": "Segoe UI Semibold",
                       "fontWeight": "bold",
-                      "fontSize": "7.5pt",
-                      "color": "#0D9488"
+                      "fontSize": "15pt",
+                      "color": "#1A1D21"
                     }
                   }
                 ]
@@ -31,22 +32,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Cada número é rastreável até a fonte",
+                    "value": "Anomalias reais encontradas na base Olist (99.441 pedidos brutos), tratamento determinístico e conferência SQL",
                     "textStyle": {
-                      "fontWeight": "bold",
-                      "fontSize": "14pt",
-                      "color": "#0F172A"
-                    }
-                  }
-                ]
-              },
-              {
-                "textRuns": [
-                  {
-                    "value": "Anomalias reais encontradas na base Olist (99.441 pedidos brutos), tratamento aplicado e conferência SQL.",
-                    "textStyle": {
-                      "fontSize": "8pt",
-                      "color": "#64748B"
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "9pt",
+                      "color": "#4A515A"
                     }
                   }
                 ]
