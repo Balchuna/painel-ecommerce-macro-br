@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "mix_pagamento",
   "position": {
-    "x": 784,
-    "y": 208,
-    "z": 13,
-    "height": 156,
-    "width": 472,
-    "tabOrder": 13
+    "x": 24,
+    "y": 456,
+    "z": 10,
+    "height": 224,
+    "width": 400,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -79,30 +79,44 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#1E3A5F'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Pagamento Destaque"
                     }
                   }
                 }
               }
             }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
           }
         }
       ],
       "categoryAxis": [
         {
           "properties": {
-            "fontSize": {
+            "maxMarginFactor": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "36L"
                 }
               }
             },
             "innerPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "8L"
+                  "Value": "14L"
                 }
               }
             }
@@ -138,6 +152,13 @@
                   "Value": "8D"
                 }
               }
+            },
+            "labelPosition": {
+              "expr": {
+                "Literal": {
+                  "Value": "'OutsideEnd'"
+                }
+              }
             }
           }
         }
@@ -169,8 +190,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Cartão domina: 78,5% do GMV real'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Mix Pagamento"
                 }
               }
             }
@@ -183,7 +209,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'% do GMV real entregue · 4 meios principais'"
                 }
               }
             }

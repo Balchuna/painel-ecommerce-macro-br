@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -23,6 +24,9 @@ RAIZ = Path(__file__).resolve().parents[1]
 POWERBI = RAIZ / "powerbi"
 GERADOR = RAIZ / "scripts" / "montar_pbip.py"
 LER_TOM = RAIZ / "tests" / "ler_modelo_tom.ps1"
+MARCA_DIR = RAIZ / "marca"
+TOKENS_PATH = MARCA_DIR / "tokens.json"
+TEMA_GERADO_PATH = MARCA_DIR / "powerbi" / "tema-azul-claro.json"
 TEMA_PATH = RAIZ / "tema" / "tema.json"
 DAX_PATH = RAIZ / "dax" / "medidas.dax"
 MODELO_MD = RAIZ / "docs" / "MODELO.md"
@@ -166,35 +170,74 @@ def iterar_visuais():
 
 
 # ---------------------------------------------------------------------------------------------
-# 1. Tema editorial (tema/tema.json)
+# 1. Tema Padrão BI (acento azul) — marca/gerar.py, tema/tema.json e paridade
+
+
+def test_gerar_py_acento_azul_contraste_e_paridade(tmp_path):
+    """Roda marca/gerar.py --acento azul em cópia isolada (contraste >= 4.5:1 texto / >= 3:1 marca)
+    e garante paridade com os artefatos versionados sem sujar o working tree.
+    """
+    copia_marca = tmp_path / "marca"
+    shutil.copytree(MARCA_DIR, copia_marca)
+    res = subprocess.run(
+        [sys.executable, str(copia_marca / "gerar.py"), "--acento", "azul"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    assert res.returncode == 0, f"marca/gerar.py --acento azul falhou: {res.stdout}\n{res.stderr}"
+
+    norm = lambda p: p.read_bytes().replace(b"\r\n", b"\n")
+    assert norm(copia_marca / "tokens.css") == norm(MARCA_DIR / "tokens.css"), (
+        "marca/tokens.css diverge da saída de marca/gerar.py --acento azul"
+    )
+    assert norm(copia_marca / "powerbi" / "tema-azul-claro.json") == norm(TEMA_GERADO_PATH), (
+        "marca/powerbi/tema-azul-claro.json diverge da saída de marca/gerar.py --acento azul"
+    )
 
 
 def test_tema_json_valido_tokens_e_contraste_wcag():
+    tokens = json.loads(TOKENS_PATH.read_text(encoding="utf-8"))
+    assert TEMA_GERADO_PATH.is_file(), "marca/powerbi/tema-azul-claro.json ausente"
+    assert TEMA_PATH.read_bytes() == TEMA_GERADO_PATH.read_bytes(), (
+        "tema/tema.json deve ser cópia idêntica byte a byte de marca/powerbi/tema-azul-claro.json"
+    )
+
     tema = json.loads(TEMA_PATH.read_text(encoding="utf-8"))
-    assert isinstance(tema["name"], str) and tema["name"].strip()
-    assert len(tema["dataColors"]) >= 8
+    claro = tokens["tema"]["claro"]
+    cores = tokens["cores"]
+    paleta_esperada = [cores[n]["claro"]["mark"] for n in tokens["acentos"]["azul"]] + [claro["mark_muted"]]
+
+    assert tema["name"] == "Padrão BI · azul · claro"
+    assert [c.upper() for c in tema["dataColors"]] == [c.upper() for c in paleta_esperada]
     for cor in tema["dataColors"]:
         assert HEX_RE.fullmatch(cor), f"Hex inválido em dataColors: {cor}"
 
-    # Paleta editorial principal definida em DESIGN_SPEC.md
-    assert tema["dataColors"][0].upper() == "#1E3A5F"
-    assert tema["dataColors"][1].upper() == "#0D9488"
-    assert tema["dataColors"][2].upper() == "#D97706"
-    assert tema["background"].upper() == "#FFFFFF"
-    assert tema["foreground"].upper() == "#0F172A"
-    assert tema["good"].upper() == "#0D9488"
-    assert tema["neutral"].upper() == "#D97706"
-    assert tema["bad"].upper() == "#DC2626"
+    assert tema["background"].upper() == claro["surface"].upper()
+    assert tema["foreground"].upper() == claro["ink"].upper()
+    assert tema["tableAccent"].upper() == cores["azul"]["claro"]["mark"].upper()
+    assert tema["good"].upper() == claro["positivo"].upper()
+    assert tema["neutral"].upper() == claro["alerta"].upper()
+    assert tema["bad"].upper() == claro["negativo"].upper()
+
+    # Visual styles Padrão BI: sombra desligada, borda raio 8, Segoe UI
+    global_style = tema["visualStyles"]["*"]["*"]
+    assert global_style["dropShadow"][0]["show"] is False
+    assert global_style["border"][0]["radius"] == tokens["raio"]["cartao"]
+    assert tema["textClasses"]["title"]["fontFace"] == tokens["fonte"]["powerbi_forte"]
 
     # Todas as cores em visualStyles são hex válidos
     for cor in coletar_hex_json(tema["visualStyles"]):
         assert HEX_RE.fullmatch(cor), f"Hex inválido em visualStyles: {cor}"
 
-    # Contraste WCAG AA mínimo sobre fundo branco #FFFFFF
-    assert contraste_wcag("#0F172A", "#FFFFFF") >= 15.0
-    assert contraste_wcag("#64748B", "#FFFFFF") >= 4.5
-    assert contraste_wcag("#1E3A5F", "#FFFFFF") >= 10.0
-    assert contraste_wcag("#DC2626", "#FFFFFF") >= 4.5
+    # Contraste WCAG AA mínimo sobre superfície clara (#FFFFFF)
+    assert contraste_wcag(claro["ink"], claro["surface"]) >= 15.0
+    assert contraste_wcag(claro["ink_2"], claro["surface"]) >= 4.5
+    assert contraste_wcag(claro["ink_3"], claro["surface"]) >= 4.5
+    assert contraste_wcag(claro["positivo"], claro["surface"]) >= 4.5
+    assert contraste_wcag(claro["negativo"], claro["surface"]) >= 4.5
+    assert contraste_wcag(cores["azul"]["claro"]["ink"], claro["surface"]) >= 4.5
+    assert contraste_wcag(cores["azul"]["claro"]["mark"], claro["surface"]) >= 3.0
 
     # Cópia registrada no relatório PBIR deve ser idêntica a tema/tema.json
     assert json.loads(TEMA_REGISTRADO.read_text(encoding="utf-8")) == tema
@@ -289,6 +332,70 @@ def test_pbir_zero_sobreposicao_de_visuais_e_dentro_do_canvas():
                 if x1a < x2b and x2a < x1b and y1a < y2b and y2a < y1b:
                     sobreposicoes.append((n1, n2))
         assert not sobreposicoes, f"Visuais sobrepostos na página {pid}: {sobreposicoes}"
+
+
+def test_pbir_grade_padrao_bi_1280x720_sem_eixo_duplo_sombra_ou_slop():
+    """Garante aderência total à grade de 12 colunas e 5 faixas de marca/tokens.json e REGRAS.md."""
+    grade = json.loads(TOKENS_PATH.read_text(encoding="utf-8"))["grade_powerbi"]
+    margem = grade["margem"]
+    passo = grade["largura_coluna"] + grade["calha"]
+    valid_x = {margem + c * passo for c in range(grade["colunas"])}
+    valid_w = {k * passo - grade["calha"] for k in range(1, grade["colunas"] + 1)}
+    faixas = {tuple(v) for v in grade["faixas"].values()}
+    icones_unicode = re.compile(r"[▲▼→●✓★]")
+
+    for pid in PAGINAS_ORDEM:
+        kpis_na_pagina = 0
+        for caminho in sorted((RELATORIO / "pages" / pid / "visuals").glob("*/visual.json")):
+            texto = caminho.read_text(encoding="utf-8")
+            v = json.loads(texto)
+            pos = v["position"]
+            x, y, w, h = (
+                int(round(pos["x"])),
+                int(round(pos["y"])),
+                int(round(pos["width"])),
+                int(round(pos["height"])),
+            )
+            assert (y, h) in faixas, f"Visual fora das 5 faixas em {pid}/{v['name']}: y={y}, h={h}"
+            assert x in valid_x and w in valid_w, (
+                f"Visual fora da grade de 12 colunas (88px) em {pid}/{v['name']}: x={x}, w={w}"
+            )
+            vtype = v["visual"]["visualType"]
+            if vtype == "card":
+                assert (y, w, h) == (72, 296, 80), f"KPI fora do padrão 296x80 em {pid}/{v['name']}: {(x, y, w, h)}"
+                kpis_na_pagina += 1
+            assert "ComboChart" not in vtype, f"Eixo Y duplo proibido em {pid}/{v['name']} ({vtype})"
+            vco = v["visual"].get("visualContainerObjects", {})
+            for sh in vco.get("dropShadow", []):
+                val = sh.get("properties", {}).get("show", {}).get("expr", {}).get("Literal", {}).get("Value")
+                assert val != "true", f"Sombra ligada em visual {pid}/{v['name']}"
+            assert not icones_unicode.search(texto), f"Ícone unicode proibido em {pid}/{v['name']}"
+            assert "—" not in texto, f"Travessão proibido em {pid}/{v['name']}"
+            assert "!" not in texto, f"Exclamação proibida em {pid}/{v['name']}"
+        assert kpis_na_pagina == 4, f"Página {pid} deve ter exatamente 4 cartões KPI (tem {kpis_na_pagina})"
+
+
+def test_pbir_titulos_dinamicos_dax_fx_vinculados():
+    """Todo gráfico e tabela afetado por filtros vincula title.text a uma medida DAX fx existente."""
+    modelo = campos_do_modelo_tmdl()
+    dax_medidas = set(medidas_dax_arquivo().keys())
+    vinculados = 0
+    for pagina, visual in iterar_visuais():
+        vtype = visual["visual"]["visualType"]
+        if vtype in ("textbox", "slicer", "card", "basicShape"):
+            continue
+        titulos = visual["visual"].get("visualContainerObjects", {}).get("title", [])
+        medidas_titulo = [
+            t.get("properties", {}).get("text", {}).get("expr", {}).get("Measure", {}).get("Property")
+            for t in titulos
+        ]
+        medidas_titulo = [m for m in medidas_titulo if m]
+        assert medidas_titulo, f"Visual {pagina}/{visual['name']} ({vtype}) sem título dinâmico DAX fx"
+        for prop in medidas_titulo:
+            assert ("Measure", "Medidas", prop) in modelo, f"Medida fx ausente no TMDL: {prop}"
+            assert prop in dax_medidas, f"Medida fx ausente em dax/medidas.dax: {prop}"
+        vinculados += 1
+    assert vinculados == 17, f"Esperado 17 visuais com título DAX fx, encontrado {vinculados}"
 
 
 def test_pbir_visuais_referenciam_apenas_campos_existentes_e_sem_nativeQueryRef_duplicado():

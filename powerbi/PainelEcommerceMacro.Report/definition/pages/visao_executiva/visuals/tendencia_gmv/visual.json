@@ -3,11 +3,11 @@
   "name": "tendencia_gmv",
   "position": {
     "x": 24,
-    "y": 208,
-    "z": 11,
-    "height": 288,
+    "y": 168,
+    "z": 8,
+    "height": 272,
     "width": 816,
-    "tabOrder": 11
+    "tabOrder": 8
   },
   "visual": {
     "visualType": "lineChart",
@@ -42,12 +42,12 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "GMV Nominal"
+                  "Property": "GMV Real IPCA"
                 }
               },
-              "queryRef": "Medidas.GMV Nominal",
-              "nativeQueryRef": "GMV Nominal",
-              "displayName": "GMV Nominal"
+              "queryRef": "Medidas.GMV Real IPCA",
+              "nativeQueryRef": "GMV real (IPCA)",
+              "displayName": "GMV real (IPCA)"
             },
             {
               "field": {
@@ -57,12 +57,12 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "GMV Real IPCA"
+                  "Property": "GMV Nominal"
                 }
               },
-              "queryRef": "Medidas.GMV Real IPCA",
-              "nativeQueryRef": "GMV Real (IPCA)",
-              "displayName": "GMV Real (IPCA)"
+              "queryRef": "Medidas.GMV Nominal",
+              "nativeQueryRef": "GMV nominal",
+              "displayName": "GMV nominal"
             }
           ]
         }
@@ -95,7 +95,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#1E3A5F'"
+                      "Value": "'#2A6FD6'"
                     }
                   }
                 }
@@ -103,7 +103,7 @@
             }
           },
           "selector": {
-            "metadata": "Medidas.GMV Nominal"
+            "metadata": "Medidas.GMV Real IPCA"
           }
         },
         {
@@ -113,7 +113,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#0D9488'"
+                      "Value": "'#C9CED5'"
                     }
                   }
                 }
@@ -121,7 +121,7 @@
             }
           },
           "selector": {
-            "metadata": "Medidas.GMV Real IPCA"
+            "metadata": "Medidas.GMV Nominal"
           }
         }
       ],
@@ -152,8 +152,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'GMV real cresce 135,9% em Jan–Ago 2018 vs 2017 — inflação explica só 7,6 p.p.'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Tendência GMV"
                 }
               }
             }
@@ -173,7 +178,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'R$ a preços constantes de out/2018 (IPCA). Navy = nominal, teal = real.'"
+                  "Value": "'R$ milhões por mês · real a preços de out/2018 em azul, nominal em cinza'"
                 }
               }
             }

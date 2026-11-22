@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "rodape_fontes",
+  "position": {
+    "x": 24,
+    "y": 688,
+    "z": 9,
+    "height": 16,
+    "width": 920,
+    "tabOrder": 9
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Fontes: Olist (CC BY-NC-SA 4.0) · BCB SGS 433 (IPCA), 432 (Selic), 1 (PTAX) · IBGE População 2018 · Valores reais out/2018 (IPCA) · Coleta: 22/11/2026",
+                    "textStyle": {
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#5C636D"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

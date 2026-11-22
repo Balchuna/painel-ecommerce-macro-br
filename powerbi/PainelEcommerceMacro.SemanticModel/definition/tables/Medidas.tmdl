@@ -275,7 +275,7 @@ table Medidas
 
 	/// Diferença em pontos percentuais entre crescimento nominal e real (Jan–Ago 2018 vs 2017).
 	measure 'Efeito Inflação YoY (p.p.)' = ( [GMV Nominal YoY Jan-Ago %] - [GMV Real YoY Jan-Ago %] ) * 100
-		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		formatString: +0.0 "p.p.";−0.0 "p.p.";0.0 "p.p."
 		displayFolder: 02. Inteligência Temporal (Time Intelligence)
 		lineageTag: cb22dcb6-3491-55b2-a0e0-693fd15e4dd6
 
@@ -340,13 +340,13 @@ table Medidas
 		displayFolder: 03. Logística, SLA & Impacto no Cliente
 		lineageTag: 4d3c7450-4806-5c63-b188-2bcd57593725
 
-	/// Nota média de avaliação do cliente (escala 1 a 5 estrelas) em pedidos entregues.
+	/// Nota média de avaliação do cliente (escala 1 a 5) em pedidos entregues.
 	measure 'Nota Média' =
 			CALCULATE (
 			    AVERAGE ( fato_pedidos[nota_review] ),
 			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
 			)
-		formatString: 0.00 "★"
+		formatString: 0.00
 		displayFolder: 03. Logística, SLA & Impacto no Cliente
 		lineageTag: a19aa43d-34f3-5f0f-9213-9105b0acecea
 
@@ -358,7 +358,7 @@ table Medidas
 			    KEEPFILTERS ( NOT ISBLANK ( fato_pedidos[flag_atraso] ) ),
 			    KEEPFILTERS ( fato_pedidos[flag_atraso] == 0 )
 			)
-		formatString: 0.00 "★"
+		formatString: 0.00
 		displayFolder: 03. Logística, SLA & Impacto no Cliente
 		lineageTag: 621df7a5-c5e2-5b4d-b67f-4d485bb2dae6
 
@@ -369,13 +369,13 @@ table Medidas
 			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
 			    KEEPFILTERS ( fato_pedidos[flag_atraso] = 1 )
 			)
-		formatString: 0.00 "★"
+		formatString: 0.00
 		displayFolder: 03. Logística, SLA & Impacto no Cliente
 		lineageTag: e3fbb60f-8f25-5d7f-b07c-eaf117b4cdb4
 
 	/// Queda na nota média provocada pelo atraso na entrega (Nota Atrasado - Nota no Prazo).
 	measure 'Impacto Atraso na Nota' = [Nota Média Atrasado] - [Nota Média no Prazo]
-		formatString: +0.00 "★";-0.00 "★";0.00 "★"
+		formatString: +0.00 "pts";−0.00 "pts";0.00 "pts"
 		displayFolder: 03. Logística, SLA & Impacto no Cliente
 		lineageTag: 01b2d695-a5bb-5780-8b83-3573245b3a8f
 
@@ -605,112 +605,715 @@ table Medidas
 		lineageTag: 26d011e6-b1db-5d00-9fea-73bc2f60ca36
 
 	/// Selo de conferência do gabarito SQL (6 de 6 consultas auditadas).
-	measure 'Selo Gabarito SQL' = "✓ 6/6"
+	measure 'Selo Gabarito SQL' = "6/6"
 		displayFolder: 05. Qualidade & Auditoria
 		lineageTag: f8a8b30c-8c34-53a4-9c03-247107ea1255
 
-	/// Subtítulo dinâmico do cartão GMV Nominal (variação homogênea Jan–Ago 2018 vs 2017).
+	/// Subtítulo dinâmico do cartão GMV Nominal (variação homogênea jan–ago/2018 vs. 2017).
 	measure 'Delta GMV Nominal Texto' =
 			VAR VarYoY = [GMV Nominal YoY Jan-Ago %]
 			RETURN
 			    IF (
 			        ISBLANK ( VarYoY ),
 			        "R$ correntes (entregues)",
-			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			        IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" ) & " jan–ago/18 vs. 17"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: c94293ee-2223-5157-8648-3405ffce1fc8
 
-	/// Subtítulo dinâmico do cartão GMV Real IPCA (variação homogênea Jan–Ago 2018 vs 2017).
+	/// Subtítulo dinâmico do cartão GMV Real IPCA (variação homogênea jan–ago/2018 vs. 2017).
 	measure 'Delta GMV Real Texto' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
 			VAR VarYoY = [GMV Real YoY Jan-Ago %]
+			VAR Nom = [GMV Nominal]
 			RETURN
-			    IF (
+			    SWITCH (
+			        TRUE (),
+			        NOT ISBLANK ( AnoUnico ),
+			            "nominal R$" & nbsp & FORMAT ( DIVIDE ( Nom, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi em " & AnoUnico,
 			        ISBLANK ( VarYoY ),
-			        "R$ constantes out/2018",
-			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			            "R$ constantes de out/2018",
+			        IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" )
+			            & " · nominal R$" & nbsp & FORMAT ( DIVIDE ( Nom, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: 06d3f72b-bdd9-5d23-9ef8-06502331467e
 
-	/// Subtítulo dinâmico do cartão Pedidos Entregues (variação homogênea Jan–Ago 2018 vs 2017).
+	/// Subtítulo dinâmico do cartão Pedidos Entregues (variação homogênea jan–ago/2018 vs. 2017).
 	measure 'Delta Pedidos Texto' =
+			VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
 			VAR VarYoY = [Pedidos YoY Jan-Ago %]
 			RETURN
-			    IF (
+			    SWITCH (
+			        TRUE (),
+			        NOT ISBLANK ( AnoUnico ),
+			            FORMAT ( [Clientes Únicos], "#,0", "pt-BR" ) & " clientes únicos em " & AnoUnico,
 			        ISBLANK ( VarYoY ),
-			        "base entregue Olist",
-			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			            "pedidos entregues (Olist)",
+			        IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" )
+			            & " · " & FORMAT ( [Clientes Únicos], "#,0", "pt-BR" ) & " clientes"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: e94c1d47-bed2-50be-97be-9ea2597aeb66
 
-	/// Cor semântica para deltas positivos de receita/volume (teal bom, coral ruim, muted neutro).
+	/// Subtítulo dinâmico do cartão Ticket Médio Real (compara com valor nominal no contexto).
+	measure 'Subtítulo Ticket Real' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR TkNom = [Ticket Médio Nominal]
+			RETURN
+			    IF (
+			        ISBLANK ( TkNom ),
+			        "R$ constantes de out/2018",
+			        "preços de out/2018 · nominal R$" & nbsp & FORMAT ( TkNom, "#,0.00", "pt-BR" )
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 52d7c858-d2f9-53bc-b2b7-ca3191381216
+
+	/// Subtítulo dinâmico do cartão Entregas no Prazo na página 1 (inclui nota média).
+	measure 'Subtítulo SLA Nota' =
+			VAR Nota = [Nota Média]
+			RETURN
+			    IF (
+			        ISBLANK ( Nota ),
+			        "entregas com data válida",
+			        "nota média " & FORMAT ( Nota, "0.00", "pt-BR" ) & " de 5,00"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 48693fb8-2cc9-5d92-95db-b9449604c04f
+
+	/// Subtítulo dinâmico do cartão Prazo Médio na página 2 (inclui atraso médio e frete).
+	measure 'Subtítulo Prazo Médio' =
+			VAR Atraso = [Atraso Médio quando Atrasa (d)]
+			VAR Frete = [Frete % do GMV]
+			RETURN
+			    IF (
+			        ISBLANK ( Atraso ),
+			        "da compra até a entrega",
+			        "atraso médio " & FORMAT ( Atraso, "0.0", "pt-BR" ) & " d · frete " & FORMAT ( Frete, "0.0%", "pt-BR" )
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 1a6b4ba9-5e5d-53c6-b8f7-d4d5b48d1c82
+
+	/// Subtítulo dinâmico do cartão Entregas no Prazo na página 2 (contagem no denominador SLA).
+	measure 'Subtítulo SLA Contagem' =
+			VAR NoPrazo = [Entregas no Prazo]
+			VAR Validas = [Entregas com Data Válida]
+			RETURN
+			    IF (
+			        ISBLANK ( Validas ),
+			        "entregas até a data estimada",
+			        FORMAT ( NoPrazo, "#,0", "pt-BR" ) & " de " & FORMAT ( Validas, "#,0", "pt-BR" ) & " entregas"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 2ed9c7c1-b878-562a-b1f2-d7eb61c83bf0
+
+	/// Subtítulo dinâmico do cartão Nota com Atraso na página 2 (diferença em pontos vs. no prazo).
+	measure 'Subtítulo Nota Atraso' =
+			VAR Queda = [Impacto Atraso na Nota]
+			RETURN
+			    IF (
+			        ISBLANK ( Queda ),
+			        "pedidos após a data estimada",
+			        IF ( Queda >= 0, "+", "−" ) & FORMAT ( ABS ( Queda ), "0.00", "pt-BR" ) & " pts vs. no prazo"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: b55e0c78-401f-505e-ab72-4f6a0eac119a
+
+	/// Subtítulo dinâmico do cartão Ticket Médio na página 3 (média de itens por pedido).
+	measure 'Subtítulo Ticket Itens' =
+			VAR Media = [Itens por Pedido]
+			VAR Total = [Itens Vendidos]
+			RETURN
+			    IF (
+			        ISBLANK ( Media ),
+			        "R$ constantes de out/2018",
+			        FORMAT ( Media, "0.00", "pt-BR" ) & " itens por pedido · " & FORMAT ( Total, "#,0", "pt-BR" ) & " itens"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 5bd77875-d124-5a68-88a0-f087f186d3df
+
+	/// Subtítulo dinâmico do cartão Pedidos no Cartão na página 3 (parcelamento).
+	measure 'Subtítulo Cartão Parcelas' =
+			VAR PctParc = [% Cartão Parcelado]
+			VAR MediaParc = [Parcelas Médias (Cartão)]
+			RETURN
+			    IF (
+			        ISBLANK ( PctParc ),
+			        "meio de pagamento principal",
+			        FORMAT ( PctParc, "0.0%", "pt-BR" ) & " parcelados · média " & FORMAT ( MediaParc, "0.00", "pt-BR" ) & "x"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: b8b0ef91-8067-54e6-928f-42377b182b78
+
+	/// Subtítulo dinâmico do cartão Clientes com Recompra na página 3.
+	measure 'Subtítulo Recompra' =
+			VAR Recomp = [Clientes Recompra]
+			VAR Unicos = [Clientes Únicos]
+			RETURN
+			    IF (
+			        ISBLANK ( Unicos ),
+			        "clientes com 2+ pedidos",
+			        FORMAT ( Recomp, "#,0", "pt-BR" ) & " de " & FORMAT ( Unicos, "#,0", "pt-BR" ) & " clientes"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 37addfb1-53a2-57f9-88e2-ae9bfd5f658e
+
+	/// Subtítulo dinâmico do cartão Top 10% Vendedores na página 3.
+	measure 'Subtítulo Top Vendedores' =
+			VAR Vends = [Vendedores Ativos]
+			RETURN
+			    IF (
+			        ISBLANK ( Vends ),
+			        "decil D1 de vendedores",
+			        "decil D1 entre " & FORMAT ( Vends, "#,0", "pt-BR" ) & " vendedores"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 80179945-e6ae-5e93-85e9-24e7de75764b
+
+	/// Subtítulo dinâmico do cartão Pedidos Brutos na página 4.
+	measure 'Subtítulo Pedidos Brutos' =
+			VAR Entregues = [Pedidos Entregues]
+			VAR PctEnt = DIVIDE ( Entregues, [Pedidos Brutos] )
+			RETURN
+			    FORMAT ( Entregues, "#,0", "pt-BR" ) & " entregues (" & FORMAT ( PctEnt, "0.0%", "pt-BR" ) & ")"
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 4092a6c0-c14c-59d5-949c-11ba9f3a3a71
+
+	/// Subtítulo dinâmico do cartão Pedidos Excluídos na página 4.
+	measure 'Subtítulo Excluídos' = FORMAT ( [Pedidos Não Entregues], "#,0", "pt-BR" ) & " cancelados ou não entregues"
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 5288350d-6856-5694-96f6-ba4fd1fad762
+
+	/// Subtítulo dinâmico do cartão Ocorrências Auditadas na página 4.
+	measure 'Subtítulo Anomalias' =
+			FORMAT ( [Regras de Qualidade], "#,0", "pt-BR" ) & " regras · "
+			    & FORMAT ( [Reviews Duplicadas], "#,0", "pt-BR" ) & " reviews duplicadas"
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 037121d4-9d52-5ecb-8d15-afddd7196042
+
+	/// Cor semântica para variação de GMV real (positivo/negativo/ink_2 de marca/tokens.json).
 	measure 'Cor Delta GMV Real' =
+			VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
 			VAR VarYoY = [GMV Real YoY Jan-Ago %]
 			RETURN
 			    SWITCH (
 			        TRUE (),
-			        ISBLANK ( VarYoY ), "#64748B",
-			        VarYoY >= 0, "#0D9488",
-			        "#DC2626"
+			        NOT ISBLANK ( AnoUnico ) || ISBLANK ( VarYoY ), "#4A515A",
+			        VarYoY >= 0, "#1A7F37",
+			        "#C42B3C"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: c4b70dd6-9582-5547-9ca9-62ae85f4c49b
 
-	/// Cor de fonte condicional do % Entregas no Prazo na tabela de UFs (>=92% teal, <85% coral).
+	/// Cor semântica para variação de volume de pedidos (positivo/negativo/ink_2 de marca/tokens.json).
+	measure 'Cor Delta Pedidos' =
+			VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
+			VAR VarYoY = [Pedidos YoY Jan-Ago %]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        NOT ISBLANK ( AnoUnico ) || ISBLANK ( VarYoY ), "#4A515A",
+			        VarYoY >= 0, "#1A7F37",
+			        "#C42B3C"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 516308c6-0c0b-56df-86a3-7bb0f5103217
+
+	/// Cor semântica para o impacto do atraso na nota média (negativo/positivo de marca/tokens.json).
+	measure 'Cor Impacto Atraso' =
+			VAR Queda = [Impacto Atraso na Nota]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( Queda ), "#4A515A",
+			        Queda < 0, "#C42B3C",
+			        "#1A7F37"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: abd3c7d7-bc91-5352-944d-dba018d0cf9c
+
+	/// Cor condicional de fonte do % Entregas no Prazo na tabela de UFs (>=92% positivo, <85% negativo).
 	measure 'Cor SLA UF' =
 			VAR Taxa = [% Entregas no Prazo]
 			RETURN
 			    SWITCH (
 			        TRUE (),
 			        ISBLANK ( Taxa ), BLANK (),
-			        Taxa >= 0.92, "#0D9488",
-			        Taxa < 0.85, "#DC2626",
-			        "#334155"
+			        Taxa >= 0.92, "#1A7F37",
+			        Taxa < 0.85, "#C42B3C",
+			        "#1A1D21"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: 28492305-b421-56b7-993d-f7b016ca131b
 
-	/// Escala ordinal de cor das 5 faixas de atraso logístico (página 2, visual-herói).
+	/// Escala ordinal de cor das 5 faixas de atraso logístico (tokens de marca/tokens.json).
 	measure 'Cor Faixa Atraso' =
 			SWITCH (
 			    SELECTEDVALUE ( dim_faixa_atraso[ordem] ),
-			    1, "#0D9488",
-			    2, "#FCA5A5",
-			    3, "#F87171",
-			    4, "#DC2626",
-			    5, "#991B1B",
-			    "#94A3B8"
+			    1, "#2A6FD6",
+			    2, "#C9CED5",
+			    3, "#D2602C",
+			    4, "#C42B3C",
+			    5, "#C42B3C",
+			    "#C9CED5"
 			)
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: 138b75ac-2751-58ae-b9f8-62f7d15b0d21
 
-	/// Escala de fundo branco -> teal para o mapa de calor da matriz de retenção de coorte (página 3).
+	/// Escala de fundo clara sobre acento azul para a matriz de retenção de coorte (contraste > 10:1 com ink).
 	measure 'Cor Retenção Coorte' =
 			VAR Ret = [% Retenção Coorte]
 			RETURN
 			    SWITCH (
 			        TRUE (),
 			        ISBLANK ( Ret ), "#FFFFFF",
-			        Ret >= 0.008, "#0D9488",
-			        Ret >= 0.005, "#2DD4BF",
-			        Ret >= 0.003, "#5EEAD4",
-			        Ret > 0, "#CCFBF1",
+			        Ret >= 0.008, "#B7CEF1",
+			        Ret >= 0.005, "#CCDCF5",
+			        Ret >= 0.003, "#DDE8F8",
+			        Ret > 0, "#EDF3FC",
 			        "#FFFFFF"
 			    )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: a955d5f9-7362-5d95-a93f-c35c291babe2
 
-	/// Destaque de cor da matriz de concentração de vendedores (D1 coral, demais navy-300).
-	measure 'Cor Decil Vendedores' = IF ( SELECTEDVALUE ( dim_vendedor[decil_ordem] ) = 1, "#DC2626", "#A9BCD3" )
+	/// Destaque de cor da concentração de vendedores (D1 em acento azul, D2–D10 em mark_muted).
+	measure 'Cor Decil Vendedores' = IF ( SELECTEDVALUE ( dim_vendedor[decil_ordem] ) = 1, "#2A6FD6", "#C9CED5" )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: 4dec0b06-a963-5ad3-aeda-f2c94a84c381
 
-	/// Destaque de cor da distribuição de parcelas (1x navy, demais navy-300).
-	measure 'Cor Parcelas' = IF ( SELECTEDVALUE ( fato_pedidos[faixa_parcelas_ordem] ) = 1, "#1E3A5F", "#A9BCD3" )
+	/// Destaque de cor da distribuição de parcelas (parcelados 2x–10x+ em acento azul, 1x em mark_muted).
+	measure 'Cor Parcelas' = IF ( SELECTEDVALUE ( fato_pedidos[faixa_parcelas_ordem] ) > 1, "#2A6FD6", "#C9CED5" )
 		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 		lineageTag: c1f74910-cf02-5bfb-89c8-7474d95d8ac6
+
+	/// Destaque da macrorregião líder em GMV real no filtro atual (acento azul vs. mark_muted).
+	measure 'Cor Região Destaque' =
+			VAR Atual = [GMV Real IPCA]
+			VAR Maximo =
+			    MAXX ( ALLSELECTED ( dim_geo_uf[regiao] ), [GMV Real IPCA] )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: b900b78d-121d-5d62-8d40-72efad1d1f5f
+
+	/// Destaque temporal por trimestre (2018 em acento azul; período base 2017 em mark_muted).
+	measure 'Cor Trimestre Período' = IF ( MAX ( dim_calendario[ano] ) >= 2018, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: de818c45-cec9-582e-a012-d9e4c802c40c
+
+	/// Destaque da UF líder em penetração per capita no filtro atual (acento azul vs. mark_muted).
+	measure 'Cor UF Destaque' =
+			VAR Atual = [GMV Real / 100 mil hab.]
+			VAR Maximo =
+			    MAXX (
+			        FILTER ( ALLSELECTED ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 ),
+			        [GMV Real / 100 mil hab.]
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: ac474600-26d3-533c-a246-4a5e1d47adb3
+
+	/// Destaque da região com maior prazo médio de entrega no filtro atual (acento azul vs. mark_muted).
+	measure 'Cor Prazo Região Destaque' =
+			VAR Atual = [Prazo Médio Entrega (d)]
+			VAR Maximo =
+			    MAXX (
+			        FILTER ( ALLSELECTED ( dim_geo_uf[regiao] ), [Pedidos Entregues] > 0 ),
+			        [Prazo Médio Entrega (d)]
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 3d4bf329-ab92-5a5f-b309-4e7c94b0cc07
+
+	/// Destaque da categoria líder em GMV real no filtro atual (acento azul vs. mark_muted).
+	measure 'Cor Categoria Destaque' =
+			VAR Atual = [GMV Itens Real IPCA]
+			VAR Maximo =
+			    MAXX ( ALLSELECTED ( dim_categoria[categoria_pt] ), [GMV Itens Real IPCA] )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: a6c504af-f20f-519c-bc76-16a31f50b248
+
+	/// Destaque do meio de pagamento dominante no filtro atual (acento azul vs. mark_muted).
+	measure 'Cor Pagamento Destaque' =
+			VAR Atual = [GMV Real IPCA]
+			VAR Maximo =
+			    MAXX ( ALLSELECTED ( fato_pedidos[tipo_pagamento_pt] ), [GMV Real IPCA] )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 78eaef58-e8d1-50ac-99e4-5b755290100c
+
+	/// Destaque da regra com maior volume de ocorrências na auditoria (acento azul vs. mark_muted).
+	measure 'Cor Anomalia Destaque' =
+			VAR Atual = [Anomalias Detectadas]
+			VAR Maximo =
+			    MAXX ( ALLSELECTED ( qualidade_auditoria[regra] ), [Anomalias Detectadas] )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: d52ff808-f2e4-51e7-a437-be81a5eaec38
+
+	/// Destaque do tipo de tratamento dominante na auditoria (acento azul vs. mark_muted).
+	measure 'Cor Tratamento Destaque' =
+			VAR Atual = [Anomalias Detectadas]
+			VAR Maximo =
+			    MAXX ( ALLSELECTED ( qualidade_auditoria[tipo_curto] ), [Anomalias Detectadas] )
+			RETURN
+			    IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: bb0cd112-9cd2-5ed8-9f55-e1f07c11e695
+
+	/// Título dinâmico (fx) da tendência mensal de GMV real e nominal (página 1).
+	measure 'Título Tendência GMV' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR Reg = SELECTEDVALUE ( dim_geo_uf[regiao] )
+			VAR Prefixo = IF ( NOT ISBLANK ( Reg ), "No " & Reg & ", o ", "O " )
+			VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
+			VAR GmvReal = [GMV Real IPCA]
+			VAR Pedidos = [Pedidos Entregues]
+			VAR VarReal = [GMV Real YoY Jan-Ago %]
+			VAR InflPP = [Efeito Inflação YoY (p.p.)]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( GmvReal ) || GmvReal <= 0,
+			            "Sem pedidos entregues no filtro atual",
+			        NOT ISBLANK ( AnoUnico ),
+			            "Em " & AnoUnico & ", o GMV real somou R$" & nbsp
+			                & IF (
+			                    GmvReal >= 1000000,
+			                    FORMAT ( DIVIDE ( GmvReal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+			                    FORMAT ( DIVIDE ( GmvReal, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+			                )
+			                & " em " & FORMAT ( Pedidos, "#,0", "pt-BR" ) & " entregas",
+			        NOT ISBLANK ( VarReal ),
+			            Prefixo & "GMV real "
+			                & IF ( VarReal >= 0, "cresceu ", "recuou " )
+			                & FORMAT ( ABS ( VarReal ), "0.0%", "pt-BR" )
+			                & " em jan–ago/2018"
+			                & IF (
+			                    ISBLANK ( Reg ) && NOT ISBLANK ( InflPP ),
+			                    " · inflação explica " & FORMAT ( ABS ( InflPP ), "0.0", "pt-BR" ) & " p.p.",
+			                    ""
+			                ),
+			        Prefixo & "GMV real soma R$" & nbsp
+			            & FORMAT ( DIVIDE ( GmvReal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi no período"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 7062125e-57a5-52f8-a2bf-6ca9f709d268
+
+	/// Título dinâmico (fx) da evolução da Selic meta e IPCA 12m (página 1).
+	measure 'Título Macro IPCA Selic' =
+			VAR DataIni = MIN ( dim_macro_mensal[data_mes] )
+			VAR DataFim = MAX ( dim_macro_mensal[data_mes] )
+			VAR SelicIni =
+			    CALCULATE ( [Selic Média %], dim_macro_mensal[data_mes] = DataIni )
+			VAR SelicFim =
+			    CALCULATE ( [Selic Média %], dim_macro_mensal[data_mes] = DataFim )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( SelicIni ) || ISBLANK ( SelicFim ),
+			            "Selic meta e IPCA 12m no período",
+			        ABS ( SelicFim - SelicIni ) < 0.0001,
+			            "Selic ficou em " & FORMAT ( SelicFim, "0.00%", "pt-BR" ) & " no período",
+			        SelicFim < SelicIni,
+			            "Selic caiu de " & FORMAT ( SelicIni, "0.00%", "pt-BR" )
+			                & " para " & FORMAT ( SelicFim, "0.00%", "pt-BR" ),
+			        "Selic subiu de " & FORMAT ( SelicIni, "0.00%", "pt-BR" )
+			            & " para " & FORMAT ( SelicFim, "0.00%", "pt-BR" )
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 8dac1870-3ef4-5427-9713-4c967a949edb
+
+	/// Título dinâmico (fx) do GMV real por macrorregião IBGE (página 1).
+	measure 'Título GMV Região' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR Regs = FILTER ( VALUES ( dim_geo_uf[regiao] ), [GMV Real IPCA] > 0 )
+			VAR QtdReg = COUNTROWS ( Regs )
+			VAR TotalVisivel = SUMX ( Regs, [GMV Real IPCA] )
+			VAR TopTab = TOPN ( 1, Regs, [GMV Real IPCA], DESC )
+			VAR TopReg = MAXX ( TopTab, dim_geo_uf[regiao] )
+			VAR TopVal = MAXX ( TopTab, [GMV Real IPCA] )
+			VAR Share = DIVIDE ( TopVal, TotalVisivel )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        QtdReg = 0 || TotalVisivel <= 0,
+			            "Sem GMV real por região no filtro atual",
+			        QtdReg = 1,
+			            TopReg & " soma R$" & nbsp
+			                & IF (
+			                    TopVal >= 1000000,
+			                    FORMAT ( DIVIDE ( TopVal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+			                    FORMAT ( DIVIDE ( TopVal, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+			                )
+			                & " em " & FORMAT ( [Pedidos Entregues], "#,0", "pt-BR" ) & " entregas",
+			        TopReg & " concentra " & FORMAT ( Share, "0.0%", "pt-BR" ) & " do GMV real"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: d581a5ba-c7be-5733-91a9-b56dea243e27
+
+	/// Título dinâmico (fx) do ticket médio real por trimestre (página 1).
+	measure 'Título Ticket Trimestre' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR Tris =
+			    FILTER (
+			        VALUES ( dim_calendario[trimestre_curto] ),
+			        VAR TriNum = CALCULATE ( MIN ( dim_calendario[trimestre_num] ) )
+			        RETURN
+			            TriNum >= 20171 && TriNum <= 20183 && [Pedidos Entregues] > 0
+			    )
+			VAR MinTk = MINX ( Tris, [Ticket Médio Real] )
+			VAR MaxTk = MAXX ( Tris, [Ticket Médio Real] )
+			RETURN
+			    IF (
+			        ISBLANK ( MinTk ) || ISBLANK ( MaxTk ),
+			        "Ticket médio real por trimestre",
+			        IF (
+			            ABS ( MaxTk - MinTk ) < 1,
+			            "Ticket médio real ficou em R$" & nbsp & FORMAT ( MaxTk, "#,0", "pt-BR" ),
+			            "Ticket médio real ficou entre R$" & nbsp & FORMAT ( MinTk, "#,0", "pt-BR" )
+			                & " e R$" & nbsp & FORMAT ( MaxTk, "#,0", "pt-BR" )
+			        )
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 1dc65c01-edd3-5fa3-b86c-a4029828fc07
+
+	/// Título dinâmico (fx) do impacto do atraso na nota média do cliente (página 2).
+	measure 'Título Nota Atraso' =
+			VAR NotaPrazo = [Nota Média no Prazo]
+			VAR NotaAtraso = [Nota Média Atrasado]
+			VAR Queda = [Impacto Atraso na Nota]
+			RETURN
+			    IF (
+			        ISBLANK ( NotaPrazo ) || ISBLANK ( NotaAtraso ),
+			        "Nota média por faixa de atraso na entrega",
+			        "Atraso derruba a nota de " & FORMAT ( NotaPrazo, "0.00", "pt-BR" )
+			            & " para " & FORMAT ( NotaAtraso, "0.00", "pt-BR" )
+			            & " (" & IF ( Queda >= 0, "+", "−" ) & FORMAT ( ABS ( Queda ), "0.00", "pt-BR" ) & " pts)"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: e25df73a-d6b5-5029-9758-254ae73723eb
+
+	/// Título dinâmico (fx) da penetração per capita por UF (página 2).
+	measure 'Título Penetração UF' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR UfsValidas = FILTER ( VALUES ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 )
+			VAR TopTab = TOPN ( 1, UfsValidas, [GMV Real / 100 mil hab.], DESC )
+			VAR TopUf = MAXX ( TopTab, dim_geo_uf[uf] )
+			VAR TopVal = MAXX ( TopTab, [GMV Real / 100 mil hab.] )
+			RETURN
+			    IF (
+			        ISBLANK ( TopUf ),
+			        "Penetração de e-commerce por 100 mil habitantes",
+			        TopUf & " lidera com R$" & nbsp & FORMAT ( TopVal, "#,0", "pt-BR" ) & " por 100 mil hab."
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: fb87ee17-7946-5179-b226-ab41b941bef8
+
+	/// Título dinâmico (fx) do prazo médio de entrega por macrorregião (página 2).
+	measure 'Título Prazo Região' =
+			VAR Regs = FILTER ( VALUES ( dim_geo_uf[regiao] ), [Pedidos Entregues] > 0 )
+			VAR Qtd = COUNTROWS ( Regs )
+			VAR TopTab = TOPN ( 1, Regs, [Prazo Médio Entrega (d)], DESC )
+			VAR BotTab = TOPN ( 1, Regs, [Prazo Médio Entrega (d)], ASC )
+			VAR TopReg = MAXX ( TopTab, dim_geo_uf[regiao] )
+			VAR TopDias = MAXX ( TopTab, [Prazo Médio Entrega (d)] )
+			VAR BotReg = MAXX ( BotTab, dim_geo_uf[regiao] )
+			VAR BotDias = MAXX ( BotTab, [Prazo Médio Entrega (d)] )
+			VAR Razao = DIVIDE ( TopDias, BotDias )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        Qtd = 0,
+			            "Sem entregas no filtro atual",
+			        Qtd = 1,
+			            "No " & TopReg & ", a entrega leva em média " & FORMAT ( TopDias, "0.0", "pt-BR" ) & " dias",
+			        TopReg & " espera " & FORMAT ( TopDias, "0.0", "pt-BR" ) & " d · "
+			            & FORMAT ( Razao, "0.0", "pt-BR" ) & "x o prazo do " & BotReg
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 70698c54-8c37-5ca2-a994-9cb71702de83
+
+	/// Título dinâmico (fx) da tabela de UFs com penetração IBGE e SLA (página 2).
+	measure 'Título Tabela UF' =
+			VAR QtdUfs = COUNTROWS ( FILTER ( VALUES ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 ) )
+			VAR Sla = [% Entregas no Prazo]
+			RETURN
+			    IF (
+			        QtdUfs = 0 || ISBLANK ( Sla ),
+			        "Detalhe por UF · penetração IBGE e SLA",
+			        "SLA e penetração em " & QtdUfs & IF ( QtdUfs = 1, " UF · ", " UFs · " )
+			            & FORMAT ( Sla, "0.0%", "pt-BR" ) & " no prazo"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 55f3ee4c-32ac-502c-8697-f86c73f64d4b
+
+	/// Título dinâmico (fx) do ranking de categorias por GMV real de itens (página 3).
+	measure 'Título Pareto Categorias' =
+			VAR nbsp = UNICHAR ( 160 )
+			VAR CatUnica = SELECTEDVALUE ( dim_categoria[categoria_pt] )
+			VAR Cats =
+			    FILTER (
+			        ALL ( dim_categoria[categoria_pt] ),
+			        [GMV Itens Real IPCA] > 0
+			    )
+			VAR QtdCats = COUNTROWS ( Cats )
+			VAR TopTab = TOPN ( 1, Cats, [GMV Itens Real IPCA], DESC )
+			VAR TopCat = MAXX ( TopTab, dim_categoria[categoria_pt] )
+			VAR ValUnica = [GMV Itens Real IPCA]
+			VAR TotalCats = SUMX ( Cats, [GMV Itens Real IPCA] )
+			VAR CatsAte80 =
+			    COUNTROWS (
+			        FILTER (
+			            Cats,
+			            VAR GmvLinha = [GMV Itens Real IPCA]
+			            VAR CatLinha = dim_categoria[categoria_pt]
+			            VAR AcumAntes =
+			                SUMX (
+			                    FILTER (
+			                        Cats,
+			                        [GMV Itens Real IPCA] > GmvLinha
+			                            || ( [GMV Itens Real IPCA] = GmvLinha && dim_categoria[categoria_pt] < CatLinha )
+			                    ),
+			                    [GMV Itens Real IPCA]
+			                )
+			            RETURN
+			                DIVIDE ( AcumAntes, TotalCats ) < 0.80
+			        )
+			    )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        NOT ISBLANK ( CatUnica ) && ValUnica > 0,
+			            CatUnica & " soma R$" & nbsp
+			                & IF (
+			                    ValUnica >= 1000000,
+			                    FORMAT ( DIVIDE ( ValUnica, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+			                    FORMAT ( DIVIDE ( ValUnica, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+			                )
+			                & " em GMV real",
+			        QtdCats = 0,
+			            "Sem vendas de itens no filtro atual",
+			        CatsAte80 & " de " & QtdCats & " categorias somam 80% do GMV · líder: " & TopCat
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 08ab7bed-8874-59be-8429-78bd67474f78
+
+	/// Título dinâmico (fx) da concentração de GMV por decil de vendedores (página 3).
+	measure 'Título Concentração Vendedores' =
+			VAR Top10 = [% GMV Top 10% Vendedores]
+			RETURN
+			    IF (
+			        ISBLANK ( Top10 ),
+			        "Participação no GMV por decil de vendedores",
+			        "Top 10% dos vendedores geram " & FORMAT ( Top10, "0.0%", "pt-BR" ) & " do GMV"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 282d3d89-e6d3-52fe-b329-c48db6a8a6f2
+
+	/// Título dinâmico (fx) da participação por meio de pagamento (página 3).
+	measure 'Título Mix Pagamento' =
+			VAR Pags =
+			    FILTER (
+			        VALUES ( fato_pedidos[tipo_pagamento_pt] ),
+			        [GMV Real IPCA] > 0
+			    )
+			VAR TopTab = TOPN ( 1, Pags, [GMV Real IPCA], DESC )
+			VAR TopPag = MAXX ( TopTab, fato_pedidos[tipo_pagamento_pt] )
+			VAR TopVal = MAXX ( TopTab, [GMV Real IPCA] )
+			VAR Share = DIVIDE ( TopVal, [GMV Real IPCA] )
+			RETURN
+			    IF (
+			        ISBLANK ( TopPag ) || ISBLANK ( Share ),
+			        "Participação no GMV por meio de pagamento",
+			        TopPag & " soma " & FORMAT ( Share, "0.0%", "pt-BR" ) & " do GMV"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 6ea11ca6-1133-50e7-b0e8-0d7d251ac788
+
+	/// Título dinâmico (fx) do parcelamento no cartão de crédito (página 3).
+	measure 'Título Parcelas' =
+			VAR PctParc = [% Cartão Parcelado]
+			VAR MediaParc = [Parcelas Médias (Cartão)]
+			RETURN
+			    IF (
+			        ISBLANK ( PctParc ),
+			        "Pedidos no cartão por número de parcelas",
+			        FORMAT ( PctParc, "0.0%", "pt-BR" ) & " no cartão são parcelados ("
+			            & FORMAT ( MediaParc, "0.00", "pt-BR" ) & "x)"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: b7601d76-ea28-5008-b647-63c6e8a1f1ff
+
+	/// Título dinâmico (fx) da matriz de retenção por coorte mensal (página 3).
+	measure 'Título Coorte Recompra' =
+			VAR Taxa =
+			    CALCULATE (
+			        [% Clientes Recompra],
+			        REMOVEFILTERS ( fato_pedidos[meses_desde_coorte], fato_pedidos[mes_coorte_label], fato_pedidos[coorte_mes_num] )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( Taxa ),
+			        "Retenção mensal por coorte de primeira compra",
+			        "Recompra é rara · só " & FORMAT ( Taxa, "0.0%", "pt-BR" ) & " voltam"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: cd033108-9606-5b95-a1a7-7c62d9db63e3
+
+	/// Título dinâmico (fx) das principais regras de auditoria de qualidade (página 4).
+	measure 'Título Anomalias Tipo' =
+			VAR TopTab = TOPN ( 1, VALUES ( qualidade_auditoria[regra] ), [Anomalias Detectadas], DESC )
+			VAR TopRegra = MAXX ( TopTab, qualidade_auditoria[regra] )
+			VAR TopQtd = MAXX ( TopTab, [Anomalias Detectadas] )
+			RETURN
+			    IF (
+			        ISBLANK ( TopRegra ),
+			        "Ocorrências auditadas por regra de qualidade",
+			        TopRegra & " lideram (" & FORMAT ( TopQtd, "#,0", "pt-BR" ) & ")"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: beb5b392-7776-5db8-a0e9-18c3571a1cd6
+
+	/// Título dinâmico (fx) das ocorrências agrupadas por ação de tratamento (página 4).
+	measure 'Título Tratamento Anomalias' =
+			VAR TopTab = TOPN ( 1, VALUES ( qualidade_auditoria[tipo_curto] ), [Anomalias Detectadas], DESC )
+			VAR TopTipo = MAXX ( TopTab, qualidade_auditoria[tipo_curto] )
+			VAR TopQtd = MAXX ( TopTab, [Anomalias Detectadas] )
+			VAR TotalOcorr = [Anomalias Detectadas]
+			RETURN
+			    IF (
+			        ISBLANK ( TopTipo ),
+			        "Ocorrências por tipo de tratamento",
+			        TopTipo & " concentra " & FORMAT ( TopQtd, "#,0", "pt-BR" )
+			            & " de " & FORMAT ( TotalOcorr, "#,0", "pt-BR" ) & " ocorrências"
+			    )
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: 9bb66930-2d26-563f-b806-130fd2590b8b
+
+	/// Título dinâmico (fx) da tabela completa de regras de qualidade (página 4).
+	measure 'Título Tabela Auditoria' =
+			FORMAT ( [Regras de Qualidade], "#,0", "pt-BR" )
+			    & " regras auditam " & FORMAT ( [Anomalias Detectadas], "#,0", "pt-BR" )
+			    & " ocorrências sem descarte silencioso"
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: e55d9672-92db-5a3e-911f-56c403924893
+
+	/// Título dinâmico (fx) da tabela de linhagem das fontes públicas (página 4).
+	measure 'Título Linhagem Fontes' =
+			VAR Fontes = DISTINCTCOUNT ( fontes_metadados[fonte] )
+			VAR Arqs = COUNTROWS ( fontes_metadados )
+			RETURN
+			    Fontes & " fontes públicas · " & Arqs & " arquivos com SHA-256"
+		displayFolder: 07. Títulos Dinâmicos (fx)
+		lineageTag: b03bff27-c224-5eb8-acef-91b5dbaccf54
 
 	column oculta
 		dataType: string

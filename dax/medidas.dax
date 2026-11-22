@@ -14,6 +14,7 @@
 //   - Valores reais (IPCA) estão em R$ constantes de out/2018 (BCB SGS 433).
 //   - Pareto de categorias e decis de vendedores operam no grão de item (fato_itens_pedido)
 //     para evitar dupla contagem em pedidos multi-categoria ou multi-vendedor.
+//   - Cores condicionais seguem marca/tokens.json (Padrão BI · acento azul · tema claro).
 
 DEFINE
 
@@ -272,7 +273,7 @@ MEASURE Medidas[Atraso Médio quando Atrasa (d)] =
         KEEPFILTERS ( fato_pedidos[flag_atraso] = 1 )
     )
 
-// Nota média de avaliação do cliente (escala 1 a 5 estrelas) em pedidos entregues.
+// Nota média de avaliação do cliente (escala 1 a 5) em pedidos entregues.
 MEASURE Medidas[Nota Média] =
     CALCULATE (
         AVERAGE ( fato_pedidos[nota_review] ),
@@ -481,102 +482,632 @@ MEASURE Medidas[Reviews Duplicadas] =
 
 // Selo de conferência do gabarito SQL (6 de 6 consultas auditadas).
 MEASURE Medidas[Selo Gabarito SQL] =
-    "✓ 6/6"
+    "6/6"
 
 // ---------------------------------------------------------------------------------------------
 // 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
 
-// Subtítulo dinâmico do cartão GMV Nominal (variação homogênea Jan–Ago 2018 vs 2017).
+// Subtítulo dinâmico do cartão GMV Nominal (variação homogênea jan–ago/2018 vs. 2017).
 MEASURE Medidas[Delta GMV Nominal Texto] =
     VAR VarYoY = [GMV Nominal YoY Jan-Ago %]
     RETURN
         IF (
             ISBLANK ( VarYoY ),
             "R$ correntes (entregues)",
-            IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+            IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" ) & " jan–ago/18 vs. 17"
         )
 
-// Subtítulo dinâmico do cartão GMV Real IPCA (variação homogênea Jan–Ago 2018 vs 2017).
+// Subtítulo dinâmico do cartão GMV Real IPCA (variação homogênea jan–ago/2018 vs. 2017).
 MEASURE Medidas[Delta GMV Real Texto] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
     VAR VarYoY = [GMV Real YoY Jan-Ago %]
+    VAR Nom = [GMV Nominal]
     RETURN
-        IF (
+        SWITCH (
+            TRUE (),
+            NOT ISBLANK ( AnoUnico ),
+                "nominal R$" & nbsp & FORMAT ( DIVIDE ( Nom, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi em " & AnoUnico,
             ISBLANK ( VarYoY ),
-            "R$ constantes out/2018",
-            IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+                "R$ constantes de out/2018",
+            IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" )
+                & " · nominal R$" & nbsp & FORMAT ( DIVIDE ( Nom, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi"
         )
 
-// Subtítulo dinâmico do cartão Pedidos Entregues (variação homogênea Jan–Ago 2018 vs 2017).
+// Subtítulo dinâmico do cartão Pedidos Entregues (variação homogênea jan–ago/2018 vs. 2017).
 MEASURE Medidas[Delta Pedidos Texto] =
+    VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
     VAR VarYoY = [Pedidos YoY Jan-Ago %]
     RETURN
-        IF (
+        SWITCH (
+            TRUE (),
+            NOT ISBLANK ( AnoUnico ),
+                FORMAT ( [Clientes Únicos], "#,0", "pt-BR" ) & " clientes únicos em " & AnoUnico,
             ISBLANK ( VarYoY ),
-            "base entregue Olist",
-            IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+                "pedidos entregues (Olist)",
+            IF ( VarYoY >= 0, "+", "−" ) & FORMAT ( ABS ( VarYoY ), "0.0%", "pt-BR" )
+                & " · " & FORMAT ( [Clientes Únicos], "#,0", "pt-BR" ) & " clientes"
         )
 
-// Cor semântica para deltas positivos de receita/volume (teal bom, coral ruim, muted neutro).
+// Subtítulo dinâmico do cartão Ticket Médio Real (compara com valor nominal no contexto).
+MEASURE Medidas[Subtítulo Ticket Real] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR TkNom = [Ticket Médio Nominal]
+    RETURN
+        IF (
+            ISBLANK ( TkNom ),
+            "R$ constantes de out/2018",
+            "preços de out/2018 · nominal R$" & nbsp & FORMAT ( TkNom, "#,0.00", "pt-BR" )
+        )
+
+// Subtítulo dinâmico do cartão Entregas no Prazo na página 1 (inclui nota média).
+MEASURE Medidas[Subtítulo SLA Nota] =
+    VAR Nota = [Nota Média]
+    RETURN
+        IF (
+            ISBLANK ( Nota ),
+            "entregas com data válida",
+            "nota média " & FORMAT ( Nota, "0.00", "pt-BR" ) & " de 5,00"
+        )
+
+// Subtítulo dinâmico do cartão Prazo Médio na página 2 (inclui atraso médio e frete).
+MEASURE Medidas[Subtítulo Prazo Médio] =
+    VAR Atraso = [Atraso Médio quando Atrasa (d)]
+    VAR Frete = [Frete % do GMV]
+    RETURN
+        IF (
+            ISBLANK ( Atraso ),
+            "da compra até a entrega",
+            "atraso médio " & FORMAT ( Atraso, "0.0", "pt-BR" ) & " d · frete " & FORMAT ( Frete, "0.0%", "pt-BR" )
+        )
+
+// Subtítulo dinâmico do cartão Entregas no Prazo na página 2 (contagem no denominador SLA).
+MEASURE Medidas[Subtítulo SLA Contagem] =
+    VAR NoPrazo = [Entregas no Prazo]
+    VAR Validas = [Entregas com Data Válida]
+    RETURN
+        IF (
+            ISBLANK ( Validas ),
+            "entregas até a data estimada",
+            FORMAT ( NoPrazo, "#,0", "pt-BR" ) & " de " & FORMAT ( Validas, "#,0", "pt-BR" ) & " entregas"
+        )
+
+// Subtítulo dinâmico do cartão Nota com Atraso na página 2 (diferença em pontos vs. no prazo).
+MEASURE Medidas[Subtítulo Nota Atraso] =
+    VAR Queda = [Impacto Atraso na Nota]
+    RETURN
+        IF (
+            ISBLANK ( Queda ),
+            "pedidos após a data estimada",
+            IF ( Queda >= 0, "+", "−" ) & FORMAT ( ABS ( Queda ), "0.00", "pt-BR" ) & " pts vs. no prazo"
+        )
+
+// Subtítulo dinâmico do cartão Ticket Médio na página 3 (média de itens por pedido).
+MEASURE Medidas[Subtítulo Ticket Itens] =
+    VAR Media = [Itens por Pedido]
+    VAR Total = [Itens Vendidos]
+    RETURN
+        IF (
+            ISBLANK ( Media ),
+            "R$ constantes de out/2018",
+            FORMAT ( Media, "0.00", "pt-BR" ) & " itens por pedido · " & FORMAT ( Total, "#,0", "pt-BR" ) & " itens"
+        )
+
+// Subtítulo dinâmico do cartão Pedidos no Cartão na página 3 (parcelamento).
+MEASURE Medidas[Subtítulo Cartão Parcelas] =
+    VAR PctParc = [% Cartão Parcelado]
+    VAR MediaParc = [Parcelas Médias (Cartão)]
+    RETURN
+        IF (
+            ISBLANK ( PctParc ),
+            "meio de pagamento principal",
+            FORMAT ( PctParc, "0.0%", "pt-BR" ) & " parcelados · média " & FORMAT ( MediaParc, "0.00", "pt-BR" ) & "x"
+        )
+
+// Subtítulo dinâmico do cartão Clientes com Recompra na página 3.
+MEASURE Medidas[Subtítulo Recompra] =
+    VAR Recomp = [Clientes Recompra]
+    VAR Unicos = [Clientes Únicos]
+    RETURN
+        IF (
+            ISBLANK ( Unicos ),
+            "clientes com 2+ pedidos",
+            FORMAT ( Recomp, "#,0", "pt-BR" ) & " de " & FORMAT ( Unicos, "#,0", "pt-BR" ) & " clientes"
+        )
+
+// Subtítulo dinâmico do cartão Top 10% Vendedores na página 3.
+MEASURE Medidas[Subtítulo Top Vendedores] =
+    VAR Vends = [Vendedores Ativos]
+    RETURN
+        IF (
+            ISBLANK ( Vends ),
+            "decil D1 de vendedores",
+            "decil D1 entre " & FORMAT ( Vends, "#,0", "pt-BR" ) & " vendedores"
+        )
+
+// Subtítulo dinâmico do cartão Pedidos Brutos na página 4.
+MEASURE Medidas[Subtítulo Pedidos Brutos] =
+    VAR Entregues = [Pedidos Entregues]
+    VAR PctEnt = DIVIDE ( Entregues, [Pedidos Brutos] )
+    RETURN
+        FORMAT ( Entregues, "#,0", "pt-BR" ) & " entregues (" & FORMAT ( PctEnt, "0.0%", "pt-BR" ) & ")"
+
+// Subtítulo dinâmico do cartão Pedidos Excluídos na página 4.
+MEASURE Medidas[Subtítulo Excluídos] =
+    FORMAT ( [Pedidos Não Entregues], "#,0", "pt-BR" ) & " cancelados ou não entregues"
+
+// Subtítulo dinâmico do cartão Ocorrências Auditadas na página 4.
+MEASURE Medidas[Subtítulo Anomalias] =
+    FORMAT ( [Regras de Qualidade], "#,0", "pt-BR" ) & " regras · "
+        & FORMAT ( [Reviews Duplicadas], "#,0", "pt-BR" ) & " reviews duplicadas"
+
+// Cor semântica para variação de GMV real (positivo/negativo/ink_2 de marca/tokens.json).
 MEASURE Medidas[Cor Delta GMV Real] =
+    VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
     VAR VarYoY = [GMV Real YoY Jan-Ago %]
     RETURN
         SWITCH (
             TRUE (),
-            ISBLANK ( VarYoY ), "#64748B",
-            VarYoY >= 0, "#0D9488",
-            "#DC2626"
+            NOT ISBLANK ( AnoUnico ) || ISBLANK ( VarYoY ), "#4A515A",
+            VarYoY >= 0, "#1A7F37",
+            "#C42B3C"
         )
 
-// Cor de fonte condicional do % Entregas no Prazo na tabela de UFs (>=92% teal, <85% coral).
+// Cor semântica para variação de volume de pedidos (positivo/negativo/ink_2 de marca/tokens.json).
+MEASURE Medidas[Cor Delta Pedidos] =
+    VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
+    VAR VarYoY = [Pedidos YoY Jan-Ago %]
+    RETURN
+        SWITCH (
+            TRUE (),
+            NOT ISBLANK ( AnoUnico ) || ISBLANK ( VarYoY ), "#4A515A",
+            VarYoY >= 0, "#1A7F37",
+            "#C42B3C"
+        )
+
+// Cor semântica para o impacto do atraso na nota média (negativo/positivo de marca/tokens.json).
+MEASURE Medidas[Cor Impacto Atraso] =
+    VAR Queda = [Impacto Atraso na Nota]
+    RETURN
+        SWITCH (
+            TRUE (),
+            ISBLANK ( Queda ), "#4A515A",
+            Queda < 0, "#C42B3C",
+            "#1A7F37"
+        )
+
+// Cor condicional de fonte do % Entregas no Prazo na tabela de UFs (>=92% positivo, <85% negativo).
 MEASURE Medidas[Cor SLA UF] =
     VAR Taxa = [% Entregas no Prazo]
     RETURN
         SWITCH (
             TRUE (),
             ISBLANK ( Taxa ), BLANK (),
-            Taxa >= 0.92, "#0D9488",
-            Taxa < 0.85, "#DC2626",
-            "#334155"
+            Taxa >= 0.92, "#1A7F37",
+            Taxa < 0.85, "#C42B3C",
+            "#1A1D21"
         )
 
-// Escala ordinal de cor das 5 faixas de atraso logístico (página 2, visual-herói).
+// Escala ordinal de cor das 5 faixas de atraso logístico (tokens de marca/tokens.json).
 MEASURE Medidas[Cor Faixa Atraso] =
     SWITCH (
         SELECTEDVALUE ( dim_faixa_atraso[ordem] ),
-        1, "#0D9488",
-        2, "#FCA5A5",
-        3, "#F87171",
-        4, "#DC2626",
-        5, "#991B1B",
-        "#94A3B8"
+        1, "#2A6FD6",
+        2, "#C9CED5",
+        3, "#D2602C",
+        4, "#C42B3C",
+        5, "#C42B3C",
+        "#C9CED5"
     )
 
-// Escala de fundo branco -> teal para o mapa de calor da matriz de retenção de coorte (página 3).
+// Escala de fundo clara sobre acento azul para a matriz de retenção de coorte (contraste > 10:1 com ink).
 MEASURE Medidas[Cor Retenção Coorte] =
     VAR Ret = [% Retenção Coorte]
     RETURN
         SWITCH (
             TRUE (),
             ISBLANK ( Ret ), "#FFFFFF",
-            Ret >= 0.008, "#0D9488",
-            Ret >= 0.005, "#2DD4BF",
-            Ret >= 0.003, "#5EEAD4",
-            Ret > 0, "#CCFBF1",
+            Ret >= 0.008, "#B7CEF1",
+            Ret >= 0.005, "#CCDCF5",
+            Ret >= 0.003, "#DDE8F8",
+            Ret > 0, "#EDF3FC",
             "#FFFFFF"
         )
 
-// Destaque de cor da matriz de concentração de vendedores (D1 coral, demais navy-300).
+// Destaque de cor da concentração de vendedores (D1 em acento azul, D2–D10 em mark_muted).
 MEASURE Medidas[Cor Decil Vendedores] =
-    IF ( SELECTEDVALUE ( dim_vendedor[decil_ordem] ) = 1, "#DC2626", "#A9BCD3" )
+    IF ( SELECTEDVALUE ( dim_vendedor[decil_ordem] ) = 1, "#2A6FD6", "#C9CED5" )
 
-// Destaque de cor da distribuição de parcelas (1x navy, demais navy-300).
+// Destaque de cor da distribuição de parcelas (parcelados 2x–10x+ em acento azul, 1x em mark_muted).
 MEASURE Medidas[Cor Parcelas] =
-    IF ( SELECTEDVALUE ( fato_pedidos[faixa_parcelas_ordem] ) = 1, "#1E3A5F", "#A9BCD3" )
+    IF ( SELECTEDVALUE ( fato_pedidos[faixa_parcelas_ordem] ) > 1, "#2A6FD6", "#C9CED5" )
+
+// Destaque da macrorregião líder em GMV real no filtro atual (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Região Destaque] =
+    VAR Atual = [GMV Real IPCA]
+    VAR Maximo =
+        MAXX ( ALLSELECTED ( dim_geo_uf[regiao] ), [GMV Real IPCA] )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque temporal por trimestre (2018 em acento azul; período base 2017 em mark_muted).
+MEASURE Medidas[Cor Trimestre Período] =
+    IF ( MAX ( dim_calendario[ano] ) >= 2018, "#2A6FD6", "#C9CED5" )
+
+// Destaque da UF líder em penetração per capita no filtro atual (acento azul vs. mark_muted).
+MEASURE Medidas[Cor UF Destaque] =
+    VAR Atual = [GMV Real / 100 mil hab.]
+    VAR Maximo =
+        MAXX (
+            FILTER ( ALLSELECTED ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 ),
+            [GMV Real / 100 mil hab.]
+        )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque da região com maior prazo médio de entrega no filtro atual (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Prazo Região Destaque] =
+    VAR Atual = [Prazo Médio Entrega (d)]
+    VAR Maximo =
+        MAXX (
+            FILTER ( ALLSELECTED ( dim_geo_uf[regiao] ), [Pedidos Entregues] > 0 ),
+            [Prazo Médio Entrega (d)]
+        )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque da categoria líder em GMV real no filtro atual (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Categoria Destaque] =
+    VAR Atual = [GMV Itens Real IPCA]
+    VAR Maximo =
+        MAXX ( ALLSELECTED ( dim_categoria[categoria_pt] ), [GMV Itens Real IPCA] )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque do meio de pagamento dominante no filtro atual (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Pagamento Destaque] =
+    VAR Atual = [GMV Real IPCA]
+    VAR Maximo =
+        MAXX ( ALLSELECTED ( fato_pedidos[tipo_pagamento_pt] ), [GMV Real IPCA] )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque da regra com maior volume de ocorrências na auditoria (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Anomalia Destaque] =
+    VAR Atual = [Anomalias Detectadas]
+    VAR Maximo =
+        MAXX ( ALLSELECTED ( qualidade_auditoria[regra] ), [Anomalias Detectadas] )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// Destaque do tipo de tratamento dominante na auditoria (acento azul vs. mark_muted).
+MEASURE Medidas[Cor Tratamento Destaque] =
+    VAR Atual = [Anomalias Detectadas]
+    VAR Maximo =
+        MAXX ( ALLSELECTED ( qualidade_auditoria[tipo_curto] ), [Anomalias Detectadas] )
+    RETURN
+        IF ( NOT ISBLANK ( Atual ) && Atual >= Maximo, "#2A6FD6", "#C9CED5" )
+
+// ---------------------------------------------------------------------------------------------
+// 07. Títulos Dinâmicos (fx)
+
+// Título dinâmico (fx) da tendência mensal de GMV real e nominal (página 1).
+MEASURE Medidas[Título Tendência GMV] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR Reg = SELECTEDVALUE ( dim_geo_uf[regiao] )
+    VAR Prefixo = IF ( NOT ISBLANK ( Reg ), "No " & Reg & ", o ", "O " )
+    VAR AnoUnico = SELECTEDVALUE ( dim_calendario[ano] )
+    VAR GmvReal = [GMV Real IPCA]
+    VAR Pedidos = [Pedidos Entregues]
+    VAR VarReal = [GMV Real YoY Jan-Ago %]
+    VAR InflPP = [Efeito Inflação YoY (p.p.)]
+    RETURN
+        SWITCH (
+            TRUE (),
+            ISBLANK ( GmvReal ) || GmvReal <= 0,
+                "Sem pedidos entregues no filtro atual",
+            NOT ISBLANK ( AnoUnico ),
+                "Em " & AnoUnico & ", o GMV real somou R$" & nbsp
+                    & IF (
+                        GmvReal >= 1000000,
+                        FORMAT ( DIVIDE ( GmvReal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+                        FORMAT ( DIVIDE ( GmvReal, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+                    )
+                    & " em " & FORMAT ( Pedidos, "#,0", "pt-BR" ) & " entregas",
+            NOT ISBLANK ( VarReal ),
+                Prefixo & "GMV real "
+                    & IF ( VarReal >= 0, "cresceu ", "recuou " )
+                    & FORMAT ( ABS ( VarReal ), "0.0%", "pt-BR" )
+                    & " em jan–ago/2018"
+                    & IF (
+                        ISBLANK ( Reg ) && NOT ISBLANK ( InflPP ),
+                        " · inflação explica " & FORMAT ( ABS ( InflPP ), "0.0", "pt-BR" ) & " p.p.",
+                        ""
+                    ),
+            Prefixo & "GMV real soma R$" & nbsp
+                & FORMAT ( DIVIDE ( GmvReal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi no período"
+        )
+
+// Título dinâmico (fx) da evolução da Selic meta e IPCA 12m (página 1).
+MEASURE Medidas[Título Macro IPCA Selic] =
+    VAR DataIni = MIN ( dim_macro_mensal[data_mes] )
+    VAR DataFim = MAX ( dim_macro_mensal[data_mes] )
+    VAR SelicIni =
+        CALCULATE ( [Selic Média %], dim_macro_mensal[data_mes] = DataIni )
+    VAR SelicFim =
+        CALCULATE ( [Selic Média %], dim_macro_mensal[data_mes] = DataFim )
+    RETURN
+        SWITCH (
+            TRUE (),
+            ISBLANK ( SelicIni ) || ISBLANK ( SelicFim ),
+                "Selic meta e IPCA 12m no período",
+            ABS ( SelicFim - SelicIni ) < 0.0001,
+                "Selic ficou em " & FORMAT ( SelicFim, "0.00%", "pt-BR" ) & " no período",
+            SelicFim < SelicIni,
+                "Selic caiu de " & FORMAT ( SelicIni, "0.00%", "pt-BR" )
+                    & " para " & FORMAT ( SelicFim, "0.00%", "pt-BR" ),
+            "Selic subiu de " & FORMAT ( SelicIni, "0.00%", "pt-BR" )
+                & " para " & FORMAT ( SelicFim, "0.00%", "pt-BR" )
+        )
+
+// Título dinâmico (fx) do GMV real por macrorregião IBGE (página 1).
+MEASURE Medidas[Título GMV Região] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR Regs = FILTER ( VALUES ( dim_geo_uf[regiao] ), [GMV Real IPCA] > 0 )
+    VAR QtdReg = COUNTROWS ( Regs )
+    VAR TotalVisivel = SUMX ( Regs, [GMV Real IPCA] )
+    VAR TopTab = TOPN ( 1, Regs, [GMV Real IPCA], DESC )
+    VAR TopReg = MAXX ( TopTab, dim_geo_uf[regiao] )
+    VAR TopVal = MAXX ( TopTab, [GMV Real IPCA] )
+    VAR Share = DIVIDE ( TopVal, TotalVisivel )
+    RETURN
+        SWITCH (
+            TRUE (),
+            QtdReg = 0 || TotalVisivel <= 0,
+                "Sem GMV real por região no filtro atual",
+            QtdReg = 1,
+                TopReg & " soma R$" & nbsp
+                    & IF (
+                        TopVal >= 1000000,
+                        FORMAT ( DIVIDE ( TopVal, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+                        FORMAT ( DIVIDE ( TopVal, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+                    )
+                    & " em " & FORMAT ( [Pedidos Entregues], "#,0", "pt-BR" ) & " entregas",
+            TopReg & " concentra " & FORMAT ( Share, "0.0%", "pt-BR" ) & " do GMV real"
+        )
+
+// Título dinâmico (fx) do ticket médio real por trimestre (página 1).
+MEASURE Medidas[Título Ticket Trimestre] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR Tris =
+        FILTER (
+            VALUES ( dim_calendario[trimestre_curto] ),
+            VAR TriNum = CALCULATE ( MIN ( dim_calendario[trimestre_num] ) )
+            RETURN
+                TriNum >= 20171 && TriNum <= 20183 && [Pedidos Entregues] > 0
+        )
+    VAR MinTk = MINX ( Tris, [Ticket Médio Real] )
+    VAR MaxTk = MAXX ( Tris, [Ticket Médio Real] )
+    RETURN
+        IF (
+            ISBLANK ( MinTk ) || ISBLANK ( MaxTk ),
+            "Ticket médio real por trimestre",
+            IF (
+                ABS ( MaxTk - MinTk ) < 1,
+                "Ticket médio real ficou em R$" & nbsp & FORMAT ( MaxTk, "#,0", "pt-BR" ),
+                "Ticket médio real ficou entre R$" & nbsp & FORMAT ( MinTk, "#,0", "pt-BR" )
+                    & " e R$" & nbsp & FORMAT ( MaxTk, "#,0", "pt-BR" )
+            )
+        )
+
+// Título dinâmico (fx) do impacto do atraso na nota média do cliente (página 2).
+MEASURE Medidas[Título Nota Atraso] =
+    VAR NotaPrazo = [Nota Média no Prazo]
+    VAR NotaAtraso = [Nota Média Atrasado]
+    VAR Queda = [Impacto Atraso na Nota]
+    RETURN
+        IF (
+            ISBLANK ( NotaPrazo ) || ISBLANK ( NotaAtraso ),
+            "Nota média por faixa de atraso na entrega",
+            "Atraso derruba a nota de " & FORMAT ( NotaPrazo, "0.00", "pt-BR" )
+                & " para " & FORMAT ( NotaAtraso, "0.00", "pt-BR" )
+                & " (" & IF ( Queda >= 0, "+", "−" ) & FORMAT ( ABS ( Queda ), "0.00", "pt-BR" ) & " pts)"
+        )
+
+// Título dinâmico (fx) da penetração per capita por UF (página 2).
+MEASURE Medidas[Título Penetração UF] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR UfsValidas = FILTER ( VALUES ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 )
+    VAR TopTab = TOPN ( 1, UfsValidas, [GMV Real / 100 mil hab.], DESC )
+    VAR TopUf = MAXX ( TopTab, dim_geo_uf[uf] )
+    VAR TopVal = MAXX ( TopTab, [GMV Real / 100 mil hab.] )
+    RETURN
+        IF (
+            ISBLANK ( TopUf ),
+            "Penetração de e-commerce por 100 mil habitantes",
+            TopUf & " lidera com R$" & nbsp & FORMAT ( TopVal, "#,0", "pt-BR" ) & " por 100 mil hab."
+        )
+
+// Título dinâmico (fx) do prazo médio de entrega por macrorregião (página 2).
+MEASURE Medidas[Título Prazo Região] =
+    VAR Regs = FILTER ( VALUES ( dim_geo_uf[regiao] ), [Pedidos Entregues] > 0 )
+    VAR Qtd = COUNTROWS ( Regs )
+    VAR TopTab = TOPN ( 1, Regs, [Prazo Médio Entrega (d)], DESC )
+    VAR BotTab = TOPN ( 1, Regs, [Prazo Médio Entrega (d)], ASC )
+    VAR TopReg = MAXX ( TopTab, dim_geo_uf[regiao] )
+    VAR TopDias = MAXX ( TopTab, [Prazo Médio Entrega (d)] )
+    VAR BotReg = MAXX ( BotTab, dim_geo_uf[regiao] )
+    VAR BotDias = MAXX ( BotTab, [Prazo Médio Entrega (d)] )
+    VAR Razao = DIVIDE ( TopDias, BotDias )
+    RETURN
+        SWITCH (
+            TRUE (),
+            Qtd = 0,
+                "Sem entregas no filtro atual",
+            Qtd = 1,
+                "No " & TopReg & ", a entrega leva em média " & FORMAT ( TopDias, "0.0", "pt-BR" ) & " dias",
+            TopReg & " espera " & FORMAT ( TopDias, "0.0", "pt-BR" ) & " d · "
+                & FORMAT ( Razao, "0.0", "pt-BR" ) & "x o prazo do " & BotReg
+        )
+
+// Título dinâmico (fx) da tabela de UFs com penetração IBGE e SLA (página 2).
+MEASURE Medidas[Título Tabela UF] =
+    VAR QtdUfs = COUNTROWS ( FILTER ( VALUES ( dim_geo_uf[uf] ), [Pedidos Entregues] > 0 ) )
+    VAR Sla = [% Entregas no Prazo]
+    RETURN
+        IF (
+            QtdUfs = 0 || ISBLANK ( Sla ),
+            "Detalhe por UF · penetração IBGE e SLA",
+            "SLA e penetração em " & QtdUfs & IF ( QtdUfs = 1, " UF · ", " UFs · " )
+                & FORMAT ( Sla, "0.0%", "pt-BR" ) & " no prazo"
+        )
+
+// Título dinâmico (fx) do ranking de categorias por GMV real de itens (página 3).
+MEASURE Medidas[Título Pareto Categorias] =
+    VAR nbsp = UNICHAR ( 160 )
+    VAR CatUnica = SELECTEDVALUE ( dim_categoria[categoria_pt] )
+    VAR Cats =
+        FILTER (
+            ALL ( dim_categoria[categoria_pt] ),
+            [GMV Itens Real IPCA] > 0
+        )
+    VAR QtdCats = COUNTROWS ( Cats )
+    VAR TopTab = TOPN ( 1, Cats, [GMV Itens Real IPCA], DESC )
+    VAR TopCat = MAXX ( TopTab, dim_categoria[categoria_pt] )
+    VAR ValUnica = [GMV Itens Real IPCA]
+    VAR TotalCats = SUMX ( Cats, [GMV Itens Real IPCA] )
+    VAR CatsAte80 =
+        COUNTROWS (
+            FILTER (
+                Cats,
+                VAR GmvLinha = [GMV Itens Real IPCA]
+                VAR CatLinha = dim_categoria[categoria_pt]
+                VAR AcumAntes =
+                    SUMX (
+                        FILTER (
+                            Cats,
+                            [GMV Itens Real IPCA] > GmvLinha
+                                || ( [GMV Itens Real IPCA] = GmvLinha && dim_categoria[categoria_pt] < CatLinha )
+                        ),
+                        [GMV Itens Real IPCA]
+                    )
+                RETURN
+                    DIVIDE ( AcumAntes, TotalCats ) < 0.80
+            )
+        )
+    RETURN
+        SWITCH (
+            TRUE (),
+            NOT ISBLANK ( CatUnica ) && ValUnica > 0,
+                CatUnica & " soma R$" & nbsp
+                    & IF (
+                        ValUnica >= 1000000,
+                        FORMAT ( DIVIDE ( ValUnica, 1000000 ), "0.00", "pt-BR" ) & nbsp & "mi",
+                        FORMAT ( DIVIDE ( ValUnica, 1000 ), "#,0.0", "pt-BR" ) & nbsp & "mil"
+                    )
+                    & " em GMV real",
+            QtdCats = 0,
+                "Sem vendas de itens no filtro atual",
+            CatsAte80 & " de " & QtdCats & " categorias somam 80% do GMV · líder: " & TopCat
+        )
+
+// Título dinâmico (fx) da concentração de GMV por decil de vendedores (página 3).
+MEASURE Medidas[Título Concentração Vendedores] =
+    VAR Top10 = [% GMV Top 10% Vendedores]
+    RETURN
+        IF (
+            ISBLANK ( Top10 ),
+            "Participação no GMV por decil de vendedores",
+            "Top 10% dos vendedores geram " & FORMAT ( Top10, "0.0%", "pt-BR" ) & " do GMV"
+        )
+
+// Título dinâmico (fx) da participação por meio de pagamento (página 3).
+MEASURE Medidas[Título Mix Pagamento] =
+    VAR Pags =
+        FILTER (
+            VALUES ( fato_pedidos[tipo_pagamento_pt] ),
+            [GMV Real IPCA] > 0
+        )
+    VAR TopTab = TOPN ( 1, Pags, [GMV Real IPCA], DESC )
+    VAR TopPag = MAXX ( TopTab, fato_pedidos[tipo_pagamento_pt] )
+    VAR TopVal = MAXX ( TopTab, [GMV Real IPCA] )
+    VAR Share = DIVIDE ( TopVal, [GMV Real IPCA] )
+    RETURN
+        IF (
+            ISBLANK ( TopPag ) || ISBLANK ( Share ),
+            "Participação no GMV por meio de pagamento",
+            TopPag & " soma " & FORMAT ( Share, "0.0%", "pt-BR" ) & " do GMV"
+        )
+
+// Título dinâmico (fx) do parcelamento no cartão de crédito (página 3).
+MEASURE Medidas[Título Parcelas] =
+    VAR PctParc = [% Cartão Parcelado]
+    VAR MediaParc = [Parcelas Médias (Cartão)]
+    RETURN
+        IF (
+            ISBLANK ( PctParc ),
+            "Pedidos no cartão por número de parcelas",
+            FORMAT ( PctParc, "0.0%", "pt-BR" ) & " no cartão são parcelados ("
+                & FORMAT ( MediaParc, "0.00", "pt-BR" ) & "x)"
+        )
+
+// Título dinâmico (fx) da matriz de retenção por coorte mensal (página 3).
+MEASURE Medidas[Título Coorte Recompra] =
+    VAR Taxa =
+        CALCULATE (
+            [% Clientes Recompra],
+            REMOVEFILTERS ( fato_pedidos[meses_desde_coorte], fato_pedidos[mes_coorte_label], fato_pedidos[coorte_mes_num] )
+        )
+    RETURN
+        IF (
+            ISBLANK ( Taxa ),
+            "Retenção mensal por coorte de primeira compra",
+            "Recompra é rara · só " & FORMAT ( Taxa, "0.0%", "pt-BR" ) & " voltam"
+        )
+
+// Título dinâmico (fx) das principais regras de auditoria de qualidade (página 4).
+MEASURE Medidas[Título Anomalias Tipo] =
+    VAR TopTab = TOPN ( 1, VALUES ( qualidade_auditoria[regra] ), [Anomalias Detectadas], DESC )
+    VAR TopRegra = MAXX ( TopTab, qualidade_auditoria[regra] )
+    VAR TopQtd = MAXX ( TopTab, [Anomalias Detectadas] )
+    RETURN
+        IF (
+            ISBLANK ( TopRegra ),
+            "Ocorrências auditadas por regra de qualidade",
+            TopRegra & " lideram (" & FORMAT ( TopQtd, "#,0", "pt-BR" ) & ")"
+        )
+
+// Título dinâmico (fx) das ocorrências agrupadas por ação de tratamento (página 4).
+MEASURE Medidas[Título Tratamento Anomalias] =
+    VAR TopTab = TOPN ( 1, VALUES ( qualidade_auditoria[tipo_curto] ), [Anomalias Detectadas], DESC )
+    VAR TopTipo = MAXX ( TopTab, qualidade_auditoria[tipo_curto] )
+    VAR TopQtd = MAXX ( TopTab, [Anomalias Detectadas] )
+    VAR TotalOcorr = [Anomalias Detectadas]
+    RETURN
+        IF (
+            ISBLANK ( TopTipo ),
+            "Ocorrências por tipo de tratamento",
+            TopTipo & " concentra " & FORMAT ( TopQtd, "#,0", "pt-BR" )
+                & " de " & FORMAT ( TotalOcorr, "#,0", "pt-BR" ) & " ocorrências"
+        )
+
+// Título dinâmico (fx) da tabela completa de regras de qualidade (página 4).
+MEASURE Medidas[Título Tabela Auditoria] =
+    FORMAT ( [Regras de Qualidade], "#,0", "pt-BR" )
+        & " regras auditam " & FORMAT ( [Anomalias Detectadas], "#,0", "pt-BR" )
+        & " ocorrências sem descarte silencioso"
+
+// Título dinâmico (fx) da tabela de linhagem das fontes públicas (página 4).
+MEASURE Medidas[Título Linhagem Fontes] =
+    VAR Fontes = DISTINCTCOUNT ( fontes_metadados[fonte] )
+    VAR Arqs = COUNTROWS ( fontes_metadados )
+    RETURN
+        Fontes & " fontes públicas · " & Arqs & " arquivos com SHA-256"
 
 // ---------------------------------------------------------------------------------------------
 // Conferência executiva. Deve reproduzir exatamente sql/gabarito/01_visao_executiva.csv:
 // 99.441 brutos, 96.478 entregues, R$ 15.424.463,65 nominal, R$ 15.964.483,56 real IPCA,
-// ticket real R$ 165,47, nota 4,16 (4,29 no prazo vs 2,27 atrasado), prazo 12,50d, 93,23% no prazo,
+// ticket real R$ 165,47, nota 4,16 (4,29 no prazo vs. 2,27 atrasado), prazo 12,50 d, 93,23% no prazo,
 // 75,48% cartão, 3,55 parcelas, 3,00% recompra, 66,34% top 10% vendedores.
 
 EVALUATE

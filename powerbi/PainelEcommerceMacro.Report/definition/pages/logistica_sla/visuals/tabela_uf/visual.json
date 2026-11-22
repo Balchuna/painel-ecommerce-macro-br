@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "tabela_uf",
   "position": {
-    "x": 640,
-    "y": 208,
-    "z": 13,
-    "height": 476,
-    "width": 616,
-    "tabOrder": 13
+    "x": 648,
+    "y": 456,
+    "z": 11,
+    "height": 224,
+    "width": 608,
+    "tabOrder": 11
   },
   "visual": {
     "visualType": "tableEx",
@@ -143,6 +143,26 @@
       }
     },
     "objects": {
+      "grid": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "2L"
+                }
+              }
+            }
+          }
+        }
+      ],
       "total": [
         {
           "properties": {
@@ -202,8 +222,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Onde o e-commerce penetra mais — e onde entrega pior'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Tabela UF"
                 }
               }
             }
@@ -223,7 +248,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'GMV real por 100 mil habitantes (IBGE 2018) e SLA por UF do cliente (≥92% teal, <85% coral).'"
+                  "Value": "'GMV real por 100 mil hab. e SLA · verde ≥ 92%, vermelho < 85%'"
                 }
               }
             }

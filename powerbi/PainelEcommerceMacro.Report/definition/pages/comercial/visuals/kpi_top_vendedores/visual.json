@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "kpi_top_vendedores",
   "position": {
-    "x": 1064,
-    "y": 96,
-    "z": 10,
-    "height": 96,
-    "width": 192,
-    "tabOrder": 10
+    "x": 960,
+    "y": 72,
+    "z": 7,
+    "height": 80,
+    "width": 296,
+    "tabOrder": 7
   },
   "visual": {
     "visualType": "card",
@@ -40,18 +40,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "22D"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#DC2626'"
-                    }
-                  }
+                  "Value": "18D"
                 }
               }
             }
@@ -60,6 +49,40 @@
       ]
     },
     "visualContainerObjects": {
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ],
       "title": [
         {
           "properties": {
@@ -73,7 +96,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'TOP 10% VENDEDORES'"
+                  "Value": "'GMV no top 10% vendedores'"
                 }
               }
             }
@@ -90,21 +113,22 @@
                 }
               }
             },
-            "text": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'risco de concentração'"
+                  "Value": "8D"
                 }
               }
             },
-            "fontColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#DC2626'"
+            "text": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
                     }
-                  }
+                  },
+                  "Property": "Subtítulo Top Vendedores"
                 }
               }
             }

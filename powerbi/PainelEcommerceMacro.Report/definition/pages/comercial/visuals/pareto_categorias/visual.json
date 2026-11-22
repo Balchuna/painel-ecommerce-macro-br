@@ -3,14 +3,14 @@
   "name": "pareto_categorias",
   "position": {
     "x": 24,
-    "y": 208,
-    "z": 11,
-    "height": 260,
-    "width": 744,
-    "tabOrder": 11
+    "y": 168,
+    "z": 8,
+    "height": 272,
+    "width": 816,
+    "tabOrder": 8
   },
   "visual": {
-    "visualType": "lineClusteredColumnComboChart",
+    "visualType": "clusteredBarChart",
     "query": {
       "queryState": {
         "Category": {
@@ -46,13 +46,28 @@
                 }
               },
               "queryRef": "Medidas.GMV Itens Real IPCA",
-              "nativeQueryRef": "GMV Real (IPCA)",
-              "displayName": "GMV Real (IPCA)"
+              "nativeQueryRef": "GMV real",
+              "displayName": "GMV real"
             }
           ]
         },
-        "Y2": {
+        "Tooltips": {
           "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "% GMV Categorias"
+                }
+              },
+              "queryRef": "Medidas.% GMV Categorias",
+              "nativeQueryRef": "% do GMV",
+              "displayName": "% do GMV"
+            },
             {
               "field": {
                 "Measure": {
@@ -65,8 +80,8 @@
                 }
               },
               "queryRef": "Medidas.% Acumulado GMV Categorias",
-              "nativeQueryRef": "% Acumulado",
-              "displayName": "% Acumulado"
+              "nativeQueryRef": "% acumulado",
+              "displayName": "% acumulado"
             }
           ]
         }
@@ -98,8 +113,13 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#1E3A5F'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Categoria Destaque"
                     }
                   }
                 }
@@ -107,29 +127,50 @@
             }
           },
           "selector": {
-            "metadata": "Medidas.GMV Itens Real IPCA"
-          }
-        },
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#D97706'"
-                    }
-                  }
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
                 }
               }
-            }
-          },
-          "selector": {
-            "metadata": "Medidas.% Acumulado GMV Categorias"
+            ]
           }
         }
       ],
-      "y2Axis": [
+      "categoryAxis": [
+        {
+          "properties": {
+            "maxMarginFactor": {
+              "expr": {
+                "Literal": {
+                  "Value": "36L"
+                }
+              }
+            },
+            "innerPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "10L"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "labels": [
         {
           "properties": {
             "show": {
@@ -139,24 +180,24 @@
                 }
               }
             },
-            "start": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "8D"
                 }
               }
             },
-            "end": {
+            "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "1D"
+                  "Value": "'OutsideEnd'"
                 }
               }
             }
           }
         }
       ],
-      "labels": [
+      "legend": [
         {
           "properties": {
             "show": {
@@ -183,8 +224,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'18 categorias somam 80% do GMV real (top 15 = 76,5%)'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Pareto Categorias"
                 }
               }
             }
@@ -204,7 +250,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Barras = GMV real de itens (R$ out/2018); linha âmbar = % acumulado sobre 74 categorias.'"
+                  "Value": "'Top 8 por GMV real de itens (R$ de out/2018) · % acumulado na dica'"
                 }
               }
             }
@@ -217,7 +263,7 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "top15_categorias",
+        "name": "top8_categorias",
         "field": {
           "Column": {
             "Expression": {
@@ -278,7 +324,7 @@
                         }
                       }
                     ],
-                    "Top": 15
+                    "Top": 8
                   }
                 }
               },

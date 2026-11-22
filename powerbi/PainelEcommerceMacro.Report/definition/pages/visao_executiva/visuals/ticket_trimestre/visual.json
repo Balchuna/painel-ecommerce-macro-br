@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "ticket_trimestre",
   "position": {
-    "x": 440,
-    "y": 512,
-    "z": 14,
-    "height": 172,
-    "width": 400,
-    "tabOrder": 14
+    "x": 648,
+    "y": 456,
+    "z": 11,
+    "height": 224,
+    "width": 608,
+    "tabOrder": 11
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -46,8 +46,8 @@
                 }
               },
               "queryRef": "Medidas.Ticket Médio Real",
-              "nativeQueryRef": "Ticket Real",
-              "displayName": "Ticket Real"
+              "nativeQueryRef": "Ticket real",
+              "displayName": "Ticket real"
             }
           ]
         }
@@ -79,26 +79,27 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#0D9488'"
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Medidas"
+                        }
+                      },
+                      "Property": "Cor Trimestre Período"
                     }
                   }
                 }
               }
             }
-          }
-        }
-      ],
-      "categoryAxis": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "8D"
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
                 }
               }
-            }
+            ]
           }
         }
       ],
@@ -125,10 +126,10 @@
                 }
               }
             },
-            "fontSize": {
+            "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "'OutsideEnd'"
                 }
               }
             }
@@ -162,8 +163,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Ticket médio real estável (R$ 158–174) em 2017–2018'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Ticket Trimestre"
                 }
               }
             }
@@ -176,7 +182,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'R$ de out/2018 por pedido entregue · 2017 em cinza, 2018 em azul'"
                 }
               }
             }

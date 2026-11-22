@@ -1,0 +1,37 @@
+# Gerado por marca/gerar.py. Não edite à mão.
+meta:
+  name: "Padrão BI"
+color:
+  palette:
+    azul: "#2A6FD6"
+    terracota: "#D2602C"
+    petroleo: "#13917F"
+    amora: "#B5427F"
+    ocre: "#C98A00"
+    tinta: "#1A1D21"
+    tinta-2: "#4A515A"
+    canvas: "#F4F5F7"
+  background: "#FFFFFF"
+  foreground: "#1A1D21"
+  primary: "#1D5BB8"
+  secondary: "#4A515A"
+  light: "#F4F5F7"
+  dark: "#1A1D21"
+  success: "#1A7F37"
+  danger: "#C42B3C"
+  warning: "#8F5600"
+typography:
+  fonts:
+    - family: "Segoe UI"
+      source: system
+    - family: "Noto Sans"
+      source: system
+  base:
+    family: "Segoe UI"
+    line-height: 1.45
+  headings:
+    family: "Segoe UI"
+    weight: 600
+    color: "#1A1D21"
+  link:
+    color: primary

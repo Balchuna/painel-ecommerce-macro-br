@@ -208,3 +208,53 @@ ROW (
     assert int(aud["reviews_dup"]) == int(
         sql06.loc[sql06["regra_id"] == "Q08_AVALIACOES_DUPLICADAS", "linhas_afetadas"].iloc[0]
     )
+
+
+def test_desktop_dax_titulos_dinamicos_fx_recalculam_com_filtros(modelo):
+    """Garante que todas as 17 medidas fx de título avaliam sem erro e respondem a filtros no motor Desktop."""
+    (base,) = modelo.consultar("""
+EVALUATE
+ROW (
+    "tendencia", [Título Tendência GMV],
+    "macro", [Título Macro IPCA Selic],
+    "regiao", [Título GMV Região],
+    "ticket_tri", [Título Ticket Trimestre],
+    "nota_atraso", [Título Nota Atraso],
+    "penetracao", [Título Penetração UF],
+    "prazo_reg", [Título Prazo Região],
+    "tab_uf", [Título Tabela UF],
+    "pareto", [Título Pareto Categorias],
+    "vendedores", [Título Concentração Vendedores],
+    "pagamento", [Título Mix Pagamento],
+    "parcelas", [Título Parcelas],
+    "coorte", [Título Coorte Recompra],
+    "anom_tipo", [Título Anomalias Tipo],
+    "tratamento", [Título Tratamento Anomalias],
+    "tab_aud", [Título Tabela Auditoria],
+    "linhagem", [Título Linhagem Fontes]
+)
+""")
+    assert len(base) == 17
+    for chave, valor in base.items():
+        assert isinstance(valor, str) and len(valor.strip()) >= 8, f"Título fx vazio ({chave}): {valor!r}"
+        for proibido in ("NaN", "Infinity", "!", "—", "▲", "▼", "→", "●", "✓", "★"):
+            assert proibido not in valor, f"Símbolo proibido {proibido!r} em título fx {chave}: {valor!r}"
+
+    # Verifica recálculo dinâmico sob filtro de Região = Nordeste
+    (filtrado,) = modelo.consultar("""
+EVALUATE
+CALCULATETABLE (
+    ROW (
+        "tendencia", [Título Tendência GMV],
+        "regiao", [Título GMV Região],
+        "prazo_reg", [Título Prazo Região],
+        "tab_uf", [Título Tabela UF]
+    ),
+    dim_geo_uf[regiao] = "Nordeste"
+)
+""")
+    assert filtrado["regiao"] != base["regiao"], "Título GMV Região não respondeu ao filtro Nordeste"
+    assert "Nordeste" in filtrado["regiao"], filtrado["regiao"]
+    assert filtrado["prazo_reg"] != base["prazo_reg"], "Título Prazo Região não respondeu ao filtro Nordeste"
+    assert "Nordeste" in filtrado["prazo_reg"], filtrado["prazo_reg"]
+    assert filtrado["tab_uf"] != base["tab_uf"], "Título Tabela UF não respondeu ao filtro Nordeste"

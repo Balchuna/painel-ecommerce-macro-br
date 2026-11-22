@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "linhagem_fontes",
   "position": {
-    "x": 672,
-    "y": 454,
-    "z": 10,
-    "height": 230,
-    "width": 584,
-    "tabOrder": 10
+    "x": 648,
+    "y": 456,
+    "z": 8,
+    "height": 224,
+    "width": 608,
+    "tabOrder": 8
   },
   "visual": {
     "visualType": "tableEx",
@@ -122,6 +122,13 @@
                   "Value": "8D"
                 }
               }
+            },
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "2L"
+                }
+              }
             }
           }
         }
@@ -153,8 +160,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'3 fontes públicas, sem chave de API, coleta reprodutível'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Linhagem Fontes"
                 }
               }
             }
@@ -174,7 +186,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'17 arquivos verificados com hash SHA-256 e timestamp UTC em data/raw/manifesto_coleta.json.'"
+                  "Value": "'Manifesto com hash SHA-256 e timestamp UTC em data/raw/manifesto_coleta.json'"
                 }
               }
             }

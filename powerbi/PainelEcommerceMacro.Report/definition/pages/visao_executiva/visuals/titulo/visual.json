@@ -3,10 +3,10 @@
   "name": "titulo",
   "position": {
     "x": 24,
-    "y": 6,
+    "y": 16,
     "z": 0,
-    "height": 76,
-    "width": 740,
+    "height": 44,
+    "width": 608,
     "tabOrder": 0
   },
   "visual": {
@@ -19,11 +19,12 @@
               {
                 "textRuns": [
                   {
-                    "value": "01 · VISÃO EXECUTIVA & MACRO",
+                    "value": "Visão executiva e macroeconomia",
                     "textStyle": {
+                      "fontFamily": "Segoe UI Semibold",
                       "fontWeight": "bold",
-                      "fontSize": "7.5pt",
-                      "color": "#0D9488"
+                      "fontSize": "15pt",
+                      "color": "#1A1D21"
                     }
                   }
                 ]
@@ -31,22 +32,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Crescimento real, não só inflação",
+                    "value": "GMV real a preços de out/2018 (IPCA BCB SGS 433) · comparação jan–ago/2018 vs. 2017",
                     "textStyle": {
-                      "fontWeight": "bold",
-                      "fontSize": "14pt",
-                      "color": "#0F172A"
-                    }
-                  }
-                ]
-              },
-              {
-                "textRuns": [
-                  {
-                    "value": "GMV nominal vs. deflacionado pelo IPCA (BCB SGS 433), com Selic como pano de fundo do crédito ao consumo.",
-                    "textStyle": {
-                      "fontSize": "8pt",
-                      "color": "#64748B"
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "9pt",
+                      "color": "#4A515A"
                     }
                   }
                 ]

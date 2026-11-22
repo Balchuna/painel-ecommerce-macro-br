@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "concentracao_vendedores",
   "position": {
-    "x": 784,
-    "y": 540,
-    "z": 15,
-    "height": 144,
-    "width": 472,
-    "tabOrder": 15
+    "x": 856,
+    "y": 168,
+    "z": 9,
+    "height": 272,
+    "width": 400,
+    "tabOrder": 9
   },
   "visual": {
     "visualType": "clusteredColumnChart",
@@ -103,6 +103,19 @@
           }
         }
       ],
+      "valueAxis": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
       "labels": [
         {
           "properties": {
@@ -110,6 +123,20 @@
               "expr": {
                 "Literal": {
                   "Value": "true"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "labelPosition": {
+              "expr": {
+                "Literal": {
+                  "Value": "'OutsideEnd'"
                 }
               }
             }
@@ -143,8 +170,13 @@
             },
             "text": {
               "expr": {
-                "Literal": {
-                  "Value": "'Top 10% dos vendedores (D1) = 66,3% do GMV'"
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Título Concentração Vendedores"
                 }
               }
             }
@@ -157,7 +189,14 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'% do GMV real por decil de vendedores (D1 = top 10%)'"
                 }
               }
             }

@@ -1,0 +1,259 @@
+/* Gerado por marca/gerar.py a partir de tokens.json. Não edite à mão. */
+
+:root {
+  color-scheme: light;
+  --fonte: "Segoe UI", -apple-system, BlinkMacSystemFont, "Noto Sans", Roboto, "Helvetica Neue", sans-serif;
+  --fonte-mono: "Cascadia Mono", Consolas, "SF Mono", monospace;
+  --t-pagina: 20px;
+  --t-pagina-peso: 600;
+  --t-pagina-altura: 1.2;
+  --t-kpi: 24px;
+  --t-kpi-peso: 600;
+  --t-kpi-altura: 1.15;
+  --t-titulo: 15px;
+  --t-titulo-peso: 600;
+  --t-titulo-altura: 1.3;
+  --t-corpo: 14px;
+  --t-corpo-peso: 400;
+  --t-corpo-altura: 1.5;
+  --t-rotulo: 12px;
+  --t-rotulo-peso: 400;
+  --t-rotulo-altura: 1.35;
+  --t-nota: 11px;
+  --t-nota-peso: 400;
+  --t-nota-altura: 1.35;
+  --e-1: 4px;
+  --e-2: 8px;
+  --e-3: 12px;
+  --e-4: 16px;
+  --e-5: 24px;
+  --e-6: 32px;
+  --e-7: 48px;
+  --raio-cartao: 8px;
+  --raio-controle: 6px;
+  --raio-barra: 4px;
+  --mov-duracao: 160ms;
+  --mov-curva: cubic-bezier(0.2, 0, 0, 1);
+  --sombra-flutuante: 0 4px 12px rgba(16, 24, 40, 0.12), 0 1px 2px rgba(16, 24, 40, 0.08);
+  --acento-wash: color-mix(in srgb, var(--acento) 12%, var(--surface));
+  --div-neg: var(--terracota);
+  --div-pos: var(--azul);
+  --canvas: #F4F5F7;
+  --outspace: #ECEEF1;
+  --surface: #FFFFFF;
+  --surface-2: #F8F9FA;
+  --border: #E1E4E8;
+  --border-strong: #CDD2D8;
+  --grid: #EBEDF0;
+  --axis: #C4C9D0;
+  --mark-muted: #C9CED5;
+  --ink: #1A1D21;
+  --ink-2: #4A515A;
+  --ink-3: #5C636D;
+  --positivo: #1A7F37;
+  --negativo: #C42B3C;
+  --alerta: #8F5600;
+  --neutro-div: #E6E8EB;
+  --azul: #2A6FD6;
+  --terracota: #D2602C;
+  --petroleo: #13917F;
+  --amora: #B5427F;
+  --ocre: #C98A00;
+  --acento: #2A6FD6;
+  --acento-ink: #1D5BB8;
+  --serie-1: #2A6FD6;
+  --serie-2: #D2602C;
+  --serie-3: #13917F;
+  --serie-4: #C98A00;
+  --serie-5: #B5427F;
+}
+
+:root[data-acento="azul"] {
+  --acento: #2A6FD6;
+  --acento-ink: #1D5BB8;
+  --serie-1: #2A6FD6;
+  --serie-2: #D2602C;
+  --serie-3: #13917F;
+  --serie-4: #C98A00;
+  --serie-5: #B5427F;
+}
+
+:root[data-acento="petroleo"] {
+  --acento: #13917F;
+  --acento-ink: #0B6F61;
+  --serie-1: #13917F;
+  --serie-2: #D2602C;
+  --serie-3: #2A6FD6;
+  --serie-4: #B5427F;
+  --serie-5: #C98A00;
+}
+
+:root[data-acento="terracota"] {
+  --acento: #D2602C;
+  --acento-ink: #A8471C;
+  --serie-1: #D2602C;
+  --serie-2: #2A6FD6;
+  --serie-3: #13917F;
+  --serie-4: #C98A00;
+  --serie-5: #B5427F;
+}
+
+:root[data-acento="amora"] {
+  --acento: #B5427F;
+  --acento-ink: #973366;
+  --serie-1: #B5427F;
+  --serie-2: #2A6FD6;
+  --serie-3: #D2602C;
+  --serie-4: #13917F;
+  --serie-5: #C98A00;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0F1216;
+  --outspace: #0B0D10;
+  --surface: #171B20;
+  --surface-2: #1D2228;
+  --border: #2A3038;
+  --border-strong: #3A414A;
+  --grid: #242A31;
+  --axis: #3D444D;
+  --mark-muted: #465059;
+  --ink: #E8EBEE;
+  --ink-2: #B4BBC4;
+  --ink-3: #949CA6;
+  --positivo: #4CC26B;
+  --negativo: #F27782;
+  --alerta: #E0A645;
+  --neutro-div: #30363E;
+  --azul: #4A8BEA;
+  --terracota: #E0703F;
+  --petroleo: #22A497;
+  --amora: #D2649F;
+  --ocre: #B07F10;
+  --acento: #4A8BEA;
+  --acento-ink: #7FAEF2;
+  --serie-1: #4A8BEA;
+  --serie-2: #E0703F;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+
+:root[data-theme="dark"][data-acento="azul"] {
+  --acento: #4A8BEA;
+  --acento-ink: #7FAEF2;
+  --serie-1: #4A8BEA;
+  --serie-2: #E0703F;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+
+:root[data-theme="dark"][data-acento="petroleo"] {
+  --acento: #22A497;
+  --acento-ink: #4CC3B5;
+  --serie-1: #22A497;
+  --serie-2: #E0703F;
+  --serie-3: #4A8BEA;
+  --serie-4: #D2649F;
+  --serie-5: #B07F10;
+}
+
+:root[data-theme="dark"][data-acento="terracota"] {
+  --acento: #E0703F;
+  --acento-ink: #F0956A;
+  --serie-1: #E0703F;
+  --serie-2: #4A8BEA;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+
+:root[data-theme="dark"][data-acento="amora"] {
+  --acento: #D2649F;
+  --acento-ink: #E58CBB;
+  --serie-1: #D2649F;
+  --serie-2: #4A8BEA;
+  --serie-3: #E0703F;
+  --serie-4: #22A497;
+  --serie-5: #B07F10;
+}
+
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --canvas: #0F1216;
+  --outspace: #0B0D10;
+  --surface: #171B20;
+  --surface-2: #1D2228;
+  --border: #2A3038;
+  --border-strong: #3A414A;
+  --grid: #242A31;
+  --axis: #3D444D;
+  --mark-muted: #465059;
+  --ink: #E8EBEE;
+  --ink-2: #B4BBC4;
+  --ink-3: #949CA6;
+  --positivo: #4CC26B;
+  --negativo: #F27782;
+  --alerta: #E0A645;
+  --neutro-div: #30363E;
+  --azul: #4A8BEA;
+  --terracota: #E0703F;
+  --petroleo: #22A497;
+  --amora: #D2649F;
+  --ocre: #B07F10;
+  --acento: #4A8BEA;
+  --acento-ink: #7FAEF2;
+  --serie-1: #4A8BEA;
+  --serie-2: #E0703F;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+:root:not([data-theme="light"])[data-acento="azul"] {
+  --acento: #4A8BEA;
+  --acento-ink: #7FAEF2;
+  --serie-1: #4A8BEA;
+  --serie-2: #E0703F;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+:root:not([data-theme="light"])[data-acento="petroleo"] {
+  --acento: #22A497;
+  --acento-ink: #4CC3B5;
+  --serie-1: #22A497;
+  --serie-2: #E0703F;
+  --serie-3: #4A8BEA;
+  --serie-4: #D2649F;
+  --serie-5: #B07F10;
+}
+:root:not([data-theme="light"])[data-acento="terracota"] {
+  --acento: #E0703F;
+  --acento-ink: #F0956A;
+  --serie-1: #E0703F;
+  --serie-2: #4A8BEA;
+  --serie-3: #22A497;
+  --serie-4: #B07F10;
+  --serie-5: #D2649F;
+}
+:root:not([data-theme="light"])[data-acento="amora"] {
+  --acento: #D2649F;
+  --acento-ink: #E58CBB;
+  --serie-1: #D2649F;
+  --serie-2: #4A8BEA;
+  --serie-3: #E0703F;
+  --serie-4: #22A497;
+  --serie-5: #B07F10;
+}
+}
+
+/* Superfícies do navegador: o que não desenhamos também veste o padrão. */
+::selection { background: color-mix(in srgb, var(--acento) 24%, transparent); color: var(--ink); }
+:root { accent-color: var(--acento); caret-color: var(--acento-ink); scrollbar-color: var(--border-strong) transparent; }
+:focus-visible { outline: 2px solid var(--acento-ink); outline-offset: 2px; border-radius: var(--raio-controle); }
+a { color: var(--acento-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+table, .num { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0ms !important; animation: none !important; } }
