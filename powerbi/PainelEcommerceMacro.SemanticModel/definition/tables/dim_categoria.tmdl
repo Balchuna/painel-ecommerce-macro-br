@@ -1,0 +1,49 @@
+/// Categorias de produtos Olist com nomes padronizados em PT-BR e EN.
+table dim_categoria
+	lineageTag: e4d4b32b-a07e-53d4-b2cb-e7e1f8c2cd5e
+
+	column categoria_codigo
+		dataType: string
+		lineageTag: 0215bad1-ef97-5d02-bde8-d2e6fec81e59
+		summarizeBy: none
+		sourceColumn: categoria_codigo
+
+		annotation SummarizationSetBy = User
+
+	column categoria_pt
+		dataType: string
+		lineageTag: 9fd290c1-4e58-5893-a1d7-b0f882a21cdd
+		summarizeBy: none
+		sourceColumn: categoria_pt
+
+		annotation SummarizationSetBy = User
+
+	column categoria_en
+		dataType: string
+		lineageTag: 9a0886e5-58e6-5c86-a685-0a9d7ab421bb
+		summarizeBy: none
+		sourceColumn: categoria_en
+
+		annotation SummarizationSetBy = User
+
+	column traducao_oficial_olist
+		dataType: int64
+		formatString: 0
+		lineageTag: 8c8fa307-8b7b-535b-bf92-7b6269ce7749
+		summarizeBy: none
+		sourceColumn: traducao_oficial_olist
+
+		annotation SummarizationSetBy = User
+
+	partition dim_categoria = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_categoria.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"categoria_codigo", "categoria_pt", "categoria_en", "traducao_oficial_olist"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"categoria_codigo", "categoria_pt", "categoria_en", "traducao_oficial_olist"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"categoria_codigo", type text}, {"categoria_pt", type text}, {"categoria_en", type text}, {"traducao_oficial_olist", Int64.Type}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,20 @@
+# Arquivos brutos baixados por scripts/coletar_dados.py (~64 MB) — reproduzíveis via script.
+data/raw/
+
+# Banco SQLite montado por scripts/gerar_gabarito.py; recriado a cada execução.
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.mypy_cache/
+
+# Temporários do sistema / Office / Power BI
+~$*
+Thumbs.db
+.DS_Store
+*.pbix.tmp

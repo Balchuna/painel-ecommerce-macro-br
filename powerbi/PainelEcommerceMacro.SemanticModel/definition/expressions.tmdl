@@ -1,0 +1,37 @@
+/// Caminho absoluto da pasta data\limpa deste projeto, onde estão os CSVs do modelo estrela.
+/// Troque o caminho no Power BI Desktop ou regenere localmente com --pasta-dados.
+expression PastaDados = "C:\caminho\do\projeto\data\limpa" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 6d7beb22-eaf4-542c-8666-60d295284f2b
+
+	annotation PBI_ResultType = Text
+
+/// Fonte única de dados do painel: lista os arquivos CSV da pasta PastaDados.
+/// Usar uma fonte única evita alertas de privacidade do Power Query entre tabelas.
+expression Arquivos =
+		let
+		    Fonte = Folder.Contents(PastaDados),
+		    Csvs = Table.SelectRows(Fonte, each Text.EndsWith([Name], ".csv")),
+		    Arquivos = Table.SelectColumns(Csvs, {"Name", "Content"})
+		in
+		    Arquivos
+	lineageTag: 0a9a2edf-d030-50ef-8e0d-6f308b96f9c8
+
+	annotation PBI_ResultType = Table
+
+/// Lê um CSV UTF-8 da pasta PastaDados via Binary.Buffer para reportar erros de caminho imediatamente e promove o cabeçalho.
+expression fn_LerCsv =
+		(arquivo as text) as table =>
+		let
+		    Lido = try Binary.Buffer(Arquivos{[Name = arquivo]}[Content]),
+		    Conteudo =
+		        if Lido[HasError]
+		        then error Error.Record("Arquivo não encontrado",
+		            "Não consegui ler " & arquivo & " na pasta " & PastaDados & ". " & Lido[Error][Message])
+		        else Lido[Value],
+		    Tabela = Csv.Document(Conteudo, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+		    ComCabecalho = Table.PromoteHeaders(Tabela, [PromoteAllScalars = true])
+		in
+		    ComCabecalho
+	lineageTag: 3873f51d-c120-5402-a97c-c034bd08bf74
+
+	annotation PBI_ResultType = Function

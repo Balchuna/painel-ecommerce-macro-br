@@ -1,0 +1,76 @@
+/// Vendedores Olist classificados em decis de concentração de GMV real entregue (D1..D10).
+table dim_vendedor
+	lineageTag: f6d523d0-74ea-5cb6-9c04-42226a781f82
+
+	column seller_id
+		dataType: string
+		lineageTag: 5cc0f0a7-e9ab-56c5-b24a-110914d76f8c
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = User
+
+	column uf_vendedor
+		dataType: string
+		lineageTag: 4712a690-dd9e-5176-ae7f-4e324887c091
+		summarizeBy: none
+		sourceColumn: uf_vendedor
+
+		annotation SummarizationSetBy = User
+
+	column cidade_vendedor
+		dataType: string
+		lineageTag: 2327ff41-4412-5a57-9a36-06c0997add94
+		summarizeBy: none
+		sourceColumn: cidade_vendedor
+
+		annotation SummarizationSetBy = User
+
+	column gmv_real_entregue
+		dataType: double
+		lineageTag: ded52bd9-838e-5e2c-b2e3-b79dd40ec92f
+		summarizeBy: none
+		sourceColumn: gmv_real_entregue
+
+		annotation SummarizationSetBy = User
+
+	column pedidos_entregues
+		dataType: int64
+		formatString: 0
+		lineageTag: e2bf2f50-88da-5be9-a4c2-56e25eb0fce6
+		summarizeBy: none
+		sourceColumn: pedidos_entregues
+
+		annotation SummarizationSetBy = User
+
+	column decil_ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8a38a2e3-9825-5107-8d05-33964458d120
+		summarizeBy: none
+		sourceColumn: decil_ordem
+
+		annotation SummarizationSetBy = User
+
+	column decil_gmv
+		dataType: string
+		lineageTag: f4e38e73-9546-597b-b572-73a253fd6ed5
+		summarizeBy: none
+		sourceColumn: decil_gmv
+		sortByColumn: decil_ordem
+
+		annotation SummarizationSetBy = User
+
+	partition dim_vendedor = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_vendedor.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"seller_id", "uf_vendedor", "cidade_vendedor", "gmv_real_entregue", "pedidos_entregues", "decil_ordem", "decil_gmv"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"seller_id", "uf_vendedor", "cidade_vendedor", "gmv_real_entregue", "pedidos_entregues", "decil_ordem", "decil_gmv"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"seller_id", type text}, {"uf_vendedor", type text}, {"cidade_vendedor", type text}, {"gmv_real_entregue", type number}, {"pedidos_entregues", Int64.Type}, {"decil_ordem", Int64.Type}, {"decil_gmv", type text}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

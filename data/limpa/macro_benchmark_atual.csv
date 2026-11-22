@@ -1,0 +1,4 @@
+indicador,nome_pt,nome_en,serie_sgs,data_referencia,valor_recente,valor_fim_olist,unidade
+ipca_12m_pct,IPCA Acumulado 12 meses,IPCA 12-Month Inflation,433,2026-10-01,4.63,4.56,% 12m
+selic_meta_aa,Meta Selic (Copom),Selic Policy Rate,432,2026-12-09,13.75,6.5,% a.a.
+ptax_usd_venda,Dólar PTAX (Venda),USD/BRL PTAX (Sell),1,2026-11-19,5.8889,3.7584,R$/US$

@@ -1,0 +1,75 @@
+/// 27 Unidades da Federação (IBGE Localidades + população estimada 2018 e Censo 2022).
+table dim_geo_uf
+	lineageTag: e16b5baa-2870-5a2b-9d06-51ca71b76624
+
+	column uf
+		dataType: string
+		lineageTag: ad9a9289-0556-54be-935e-9976f5f1d8a1
+		summarizeBy: none
+		sourceColumn: uf
+
+		annotation SummarizationSetBy = User
+
+	column codigo_ibge
+		dataType: int64
+		formatString: 0
+		lineageTag: 820ccaa4-55ef-5b77-954d-2d67decfe219
+		summarizeBy: none
+		sourceColumn: codigo_ibge
+
+		annotation SummarizationSetBy = User
+
+	column nome
+		dataType: string
+		lineageTag: 7350769c-4f0f-5d5f-9193-42d5470b830d
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = User
+
+	column regiao_sigla
+		dataType: string
+		lineageTag: 63686071-f430-51db-abb6-e6f25bbdd418
+		summarizeBy: none
+		sourceColumn: regiao_sigla
+
+		annotation SummarizationSetBy = User
+
+	column regiao
+		dataType: string
+		lineageTag: bdb8320c-ba93-5d5e-82d9-125b80530e4c
+		summarizeBy: none
+		sourceColumn: regiao
+
+		annotation SummarizationSetBy = User
+
+	column populacao_ibge
+		dataType: int64
+		formatString: 0
+		lineageTag: 4afc939d-5cc6-5a24-acba-6cd010fedb76
+		summarizeBy: none
+		sourceColumn: populacao_ibge
+
+		annotation SummarizationSetBy = User
+
+	column populacao_censo_2022
+		dataType: int64
+		formatString: 0
+		lineageTag: 93c13e5a-3906-53fb-a04a-32b39243f24a
+		summarizeBy: none
+		sourceColumn: populacao_censo_2022
+
+		annotation SummarizationSetBy = User
+
+	partition dim_geo_uf = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_geo_uf.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"uf", "codigo_ibge", "nome", "regiao_sigla", "regiao", "populacao_ibge", "populacao_censo_2022"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"uf", "codigo_ibge", "nome", "regiao_sigla", "regiao", "populacao_ibge", "populacao_censo_2022"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"uf", type text}, {"codigo_ibge", Int64.Type}, {"nome", type text}, {"regiao_sigla", type text}, {"regiao", type text}, {"populacao_ibge", Int64.Type}, {"populacao_censo_2022", Int64.Type}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

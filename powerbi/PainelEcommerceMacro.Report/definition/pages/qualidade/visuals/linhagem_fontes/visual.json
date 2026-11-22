@@ -1,0 +1,187 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "linhagem_fontes",
+  "position": {
+    "x": 672,
+    "y": 454,
+    "z": 10,
+    "height": 230,
+    "width": 584,
+    "tabOrder": 10
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fontes_metadados"
+                    }
+                  },
+                  "Property": "fonte"
+                }
+              },
+              "queryRef": "fontes_metadados.fonte",
+              "nativeQueryRef": "Fonte",
+              "displayName": "Fonte"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fontes_metadados"
+                    }
+                  },
+                  "Property": "arquivo_curto"
+                }
+              },
+              "queryRef": "fontes_metadados.arquivo_curto",
+              "nativeQueryRef": "Arquivo",
+              "displayName": "Arquivo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fontes_metadados"
+                    }
+                  },
+                  "Property": "registros"
+                }
+              },
+              "queryRef": "fontes_metadados.registros",
+              "nativeQueryRef": "Registros",
+              "displayName": "Registros"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fontes_metadados"
+                    }
+                  },
+                  "Property": "coletado_data"
+                }
+              },
+              "queryRef": "fontes_metadados.coletado_data",
+              "nativeQueryRef": "Coletado",
+              "displayName": "Coletado"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fontes_metadados"
+                    }
+                  },
+                  "Property": "licenca_curta"
+                }
+              },
+              "queryRef": "fontes_metadados.licenca_curta",
+              "nativeQueryRef": "Licença",
+              "displayName": "Licença"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fontes_metadados"
+                  }
+                },
+                "Property": "registros"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'3 fontes públicas, sem chave de API, coleta reprodutível'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'17 arquivos verificados com hash SHA-256 e timestamp UTC em data/raw/manifesto_coleta.json.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

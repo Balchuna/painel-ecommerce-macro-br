@@ -1,0 +1,84 @@
+/// Retrato macro recente (IPCA 12m, Selic e PTAX) frente ao fim do recorte Olist.
+table macro_benchmark_atual
+	lineageTag: 6133372f-de12-513e-a7ec-770c7df63437
+
+	column indicador
+		dataType: string
+		lineageTag: 02812b6e-8b47-58d8-b3d9-c3d19ca44e54
+		summarizeBy: none
+		sourceColumn: indicador
+
+		annotation SummarizationSetBy = User
+
+	column nome_pt
+		dataType: string
+		lineageTag: 37c645ef-2d33-5fe6-9ca8-ff6e25697e06
+		summarizeBy: none
+		sourceColumn: nome_pt
+
+		annotation SummarizationSetBy = User
+
+	column nome_en
+		dataType: string
+		lineageTag: 8478a53f-cc78-53a1-a9be-ba9b6a1ff633
+		summarizeBy: none
+		sourceColumn: nome_en
+
+		annotation SummarizationSetBy = User
+
+	column serie_sgs
+		dataType: int64
+		formatString: 0
+		lineageTag: c0e10734-a2d0-5243-99a6-bd66255644e1
+		summarizeBy: none
+		sourceColumn: serie_sgs
+
+		annotation SummarizationSetBy = User
+
+	column data_referencia
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 7b3b9a34-de9c-5023-a524-020a00a05643
+		summarizeBy: none
+		sourceColumn: data_referencia
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column valor_recente
+		dataType: double
+		lineageTag: 0d86689f-bf95-5d3d-84ee-43f802ced690
+		summarizeBy: none
+		sourceColumn: valor_recente
+
+		annotation SummarizationSetBy = User
+
+	column valor_fim_olist
+		dataType: double
+		lineageTag: e2e4fc74-d7b7-543d-b457-7028d917f0bd
+		summarizeBy: none
+		sourceColumn: valor_fim_olist
+
+		annotation SummarizationSetBy = User
+
+	column unidade
+		dataType: string
+		lineageTag: 66d10e34-921b-5723-b8f6-459cd71aa394
+		summarizeBy: none
+		sourceColumn: unidade
+
+		annotation SummarizationSetBy = User
+
+	partition macro_benchmark_atual = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("macro_benchmark_atual.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"indicador", "nome_pt", "nome_en", "serie_sgs", "data_referencia", "valor_recente", "valor_fim_olist", "unidade"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"indicador", "nome_pt", "nome_en", "serie_sgs", "data_referencia", "valor_recente", "valor_fim_olist", "unidade"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"indicador", type text}, {"nome_pt", type text}, {"nome_en", type text}, {"serie_sgs", Int64.Type}, {"data_referencia", type date}, {"valor_recente", type number}, {"valor_fim_olist", type number}, {"unidade", type text}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

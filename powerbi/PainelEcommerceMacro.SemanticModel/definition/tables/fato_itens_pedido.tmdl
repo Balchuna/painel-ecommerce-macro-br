@@ -1,0 +1,142 @@
+/// Fato no grão de item vendido (112.650 linhas) para Pareto de categorias e vendedores.
+table fato_itens_pedido
+	lineageTag: 042f5a4e-c717-5f16-a557-591749dcd758
+
+	column order_id
+		dataType: string
+		lineageTag: 70249ad9-8c4b-55cd-a6e1-198dc9564bba
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = User
+
+	column order_item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: b16b70a0-281e-5bc3-b889-a6479db8929a
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = User
+
+	column data_compra
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 808eac62-51de-5fe0-bdc0-63e74668be64
+		summarizeBy: none
+		sourceColumn: data_compra
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column ano_mes
+		dataType: string
+		lineageTag: e1f47f88-f40b-5daf-ac25-9cb6afe7067f
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = User
+
+	column status
+		dataType: string
+		lineageTag: 57c53c80-1c3e-5d89-8018-3cdb10c7a513
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = User
+
+	column flag_entregue
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a2a7f3d-4cfc-5328-bca1-eebdc992c919
+		summarizeBy: none
+		sourceColumn: flag_entregue
+
+		annotation SummarizationSetBy = User
+
+	column uf_cliente
+		dataType: string
+		lineageTag: b712ec66-683c-5f4a-8277-b263f2723c2c
+		summarizeBy: none
+		sourceColumn: uf_cliente
+
+		annotation SummarizationSetBy = User
+
+	column categoria_codigo
+		dataType: string
+		lineageTag: a6b1d235-30ea-5c41-81eb-7154c2c50c9d
+		summarizeBy: none
+		sourceColumn: categoria_codigo
+
+		annotation SummarizationSetBy = User
+
+	column seller_id
+		dataType: string
+		lineageTag: 9deefb10-dd48-5a71-bdd5-3677d4d9d680
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = User
+
+	column uf_vendedor
+		dataType: string
+		lineageTag: 6240bec9-1701-5dbf-9113-1d89b9ea07bc
+		summarizeBy: none
+		sourceColumn: uf_vendedor
+
+		annotation SummarizationSetBy = User
+
+	column preco
+		dataType: double
+		lineageTag: c8fe3749-5249-51ad-97bf-0809f7ae4f61
+		summarizeBy: none
+		sourceColumn: preco
+
+		annotation SummarizationSetBy = User
+
+	column frete
+		dataType: double
+		lineageTag: fb07bb16-e3a4-53e8-a221-e5af02a8b274
+		summarizeBy: none
+		sourceColumn: frete
+
+		annotation SummarizationSetBy = User
+
+	column valor_item_nominal
+		dataType: double
+		lineageTag: d2e6db50-a927-569a-ac6f-b1fe8ae4917b
+		summarizeBy: none
+		sourceColumn: valor_item_nominal
+
+		annotation SummarizationSetBy = User
+
+	column valor_item_real_ipca
+		dataType: double
+		lineageTag: 3ee70140-6d3b-5c43-9dc7-60be75933090
+		summarizeBy: none
+		sourceColumn: valor_item_real_ipca
+
+		annotation SummarizationSetBy = User
+
+	column flag_frete_outlier
+		dataType: int64
+		formatString: 0
+		lineageTag: 2e321ae8-8dc7-5f75-acf7-7eeea9e1d5e7
+		summarizeBy: none
+		sourceColumn: flag_frete_outlier
+
+		annotation SummarizationSetBy = User
+
+	partition fato_itens_pedido = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("fato_itens_pedido.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"order_id", "order_item_id", "data_compra", "ano_mes", "status", "flag_entregue", "uf_cliente", "categoria_codigo", "seller_id", "uf_vendedor", "preco", "frete", "valor_item_nominal", "valor_item_real_ipca", "flag_frete_outlier"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"order_id", "order_item_id", "data_compra", "ano_mes", "status", "flag_entregue", "uf_cliente", "categoria_codigo", "seller_id", "uf_vendedor", "preco", "frete", "valor_item_nominal", "valor_item_real_ipca", "flag_frete_outlier"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"order_id", type text}, {"order_item_id", Int64.Type}, {"data_compra", type date}, {"ano_mes", type text}, {"status", type text}, {"flag_entregue", Int64.Type}, {"uf_cliente", type text}, {"categoria_codigo", type text}, {"seller_id", type text}, {"uf_vendedor", type text}, {"preco", type number}, {"frete", type number}, {"valor_item_nominal", type number}, {"valor_item_real_ipca", type number}, {"flag_frete_outlier", Int64.Type}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

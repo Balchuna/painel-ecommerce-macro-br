@@ -1,0 +1,305 @@
+/// Fato de pedidos Olist (99.441 linhas). Pedidos entregues têm flag_entregue = 1.
+table fato_pedidos
+	lineageTag: cc7439bf-215d-51fc-bf04-8929a83cddb9
+
+	column order_id
+		dataType: string
+		lineageTag: 5cb3ae20-78ff-5243-a776-fd8e26e0c58b
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = User
+
+	column data_compra
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 457fb02c-73b2-530b-9323-1619e98c06d2
+		summarizeBy: none
+		sourceColumn: data_compra
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column ano_mes
+		dataType: string
+		lineageTag: bd51a5fd-7382-5d14-86e4-06908f62f0fb
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = User
+
+	column data_aprovacao
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 434f544c-483c-59e6-88a7-a6c86fe4f0e2
+		summarizeBy: none
+		sourceColumn: data_aprovacao
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column data_entrega_estimada
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: dd8fb41d-ea2f-5f07-b61a-e8e0e4ec12f8
+		summarizeBy: none
+		sourceColumn: data_entrega_estimada
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column data_entrega_real
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 53729565-6fa1-5e21-af06-6ee87099da4f
+		summarizeBy: none
+		sourceColumn: data_entrega_real
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column dias_entrega
+		dataType: int64
+		formatString: 0
+		lineageTag: 27bf44f8-6439-5d01-8e91-fa6f178f2863
+		summarizeBy: none
+		sourceColumn: dias_entrega
+
+		annotation SummarizationSetBy = User
+
+	column dias_atraso
+		dataType: int64
+		formatString: 0
+		lineageTag: 3b54ea6d-487f-5130-9ff0-582311bdb872
+		summarizeBy: none
+		sourceColumn: dias_atraso
+
+		annotation SummarizationSetBy = User
+
+	column flag_atraso
+		dataType: int64
+		formatString: 0
+		lineageTag: 8b61f723-47ab-56b6-ae17-c47ed4fdf624
+		summarizeBy: none
+		sourceColumn: flag_atraso
+
+		annotation SummarizationSetBy = User
+
+	column faixa_atraso
+		dataType: string
+		lineageTag: 84bf68e3-f40c-540a-895d-5d6363cb7872
+		summarizeBy: none
+		sourceColumn: faixa_atraso
+
+		annotation SummarizationSetBy = User
+
+	column status
+		dataType: string
+		lineageTag: a7eb2f52-57c5-5265-a3b3-0514c0322056
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = User
+
+	column flag_entregue
+		dataType: int64
+		formatString: 0
+		lineageTag: dcd3548c-d952-58d6-afc3-839f67872834
+		summarizeBy: none
+		sourceColumn: flag_entregue
+
+		annotation SummarizationSetBy = User
+
+	column uf_cliente
+		dataType: string
+		lineageTag: 772137de-f8f4-566c-9115-4df3b0af1d30
+		summarizeBy: none
+		sourceColumn: uf_cliente
+
+		annotation SummarizationSetBy = User
+
+	column categoria_principal
+		dataType: string
+		lineageTag: bbaf83b4-42c2-5cca-87d9-75e372466a88
+		summarizeBy: none
+		sourceColumn: categoria_principal
+
+		annotation SummarizationSetBy = User
+
+	column nota_review
+		dataType: int64
+		formatString: 0
+		lineageTag: 43d5dad9-8c17-5184-9383-6a9e96559693
+		summarizeBy: none
+		sourceColumn: nota_review
+
+		annotation SummarizationSetBy = User
+
+	column qtd_itens
+		dataType: int64
+		formatString: 0
+		lineageTag: ee7bd4f5-2aca-5408-869b-bf8e199e6ae4
+		summarizeBy: none
+		sourceColumn: qtd_itens
+
+		annotation SummarizationSetBy = User
+
+	column valor_produtos
+		dataType: double
+		lineageTag: 3a8f3a1b-d6c6-5fc2-9365-ddc8ed545892
+		summarizeBy: none
+		sourceColumn: valor_produtos
+
+		annotation SummarizationSetBy = User
+
+	column valor_frete
+		dataType: double
+		lineageTag: b04cdf8a-16f8-558b-8209-d34e9c0f7f7f
+		summarizeBy: none
+		sourceColumn: valor_frete
+
+		annotation SummarizationSetBy = User
+
+	column valor_total_nominal
+		dataType: double
+		lineageTag: 55c9a096-8acd-5c8b-8de9-147afe0a861b
+		summarizeBy: none
+		sourceColumn: valor_total_nominal
+
+		annotation SummarizationSetBy = User
+
+	column valor_total_real_ipca
+		dataType: double
+		lineageTag: 29ca367b-f548-5c1f-a494-6dffb234b635
+		summarizeBy: none
+		sourceColumn: valor_total_real_ipca
+
+		annotation SummarizationSetBy = User
+
+	column tipo_pagamento_principal
+		dataType: string
+		lineageTag: 55caff3f-4b7d-5eb4-9262-5564ed819075
+		summarizeBy: none
+		sourceColumn: tipo_pagamento_principal
+
+		annotation SummarizationSetBy = User
+
+	column parcelas
+		dataType: int64
+		formatString: 0
+		lineageTag: c7767372-f82b-52d4-9177-47015a02c11f
+		summarizeBy: none
+		sourceColumn: parcelas
+
+		annotation SummarizationSetBy = User
+
+	column cliente_unico_id
+		dataType: string
+		lineageTag: 62b62c99-e2fb-5225-aa92-4522a2c01564
+		summarizeBy: none
+		sourceColumn: cliente_unico_id
+
+		annotation SummarizationSetBy = User
+
+	column coorte_mes
+		dataType: string
+		lineageTag: 198d1221-e50e-53c9-a120-c1241fbdd032
+		summarizeBy: none
+		sourceColumn: coorte_mes
+
+		annotation SummarizationSetBy = User
+
+	column meses_desde_coorte
+		dataType: int64
+		formatString: 0
+		lineageTag: db1a9ed6-66ad-544d-a5d3-394fdc1fac01
+		summarizeBy: none
+		sourceColumn: meses_desde_coorte
+
+		annotation SummarizationSetBy = User
+
+	column flag_recompra
+		dataType: int64
+		formatString: 0
+		lineageTag: f5753aae-9781-5088-bc67-798e9f968555
+		summarizeBy: none
+		sourceColumn: flag_recompra
+
+		annotation SummarizationSetBy = User
+
+	column flag_frete_outlier
+		dataType: int64
+		formatString: 0
+		lineageTag: 14365ddd-2375-5884-840b-b2ba07b19e12
+		summarizeBy: none
+		sourceColumn: flag_frete_outlier
+
+		annotation SummarizationSetBy = User
+
+	column tipo_pagamento_pt
+		dataType: string
+		lineageTag: f04c6a4e-a695-522e-8ea5-f39cdfe476a1
+		summarizeBy: none
+		sourceColumn: tipo_pagamento_pt
+
+		annotation SummarizationSetBy = User
+
+	column faixa_parcelas
+		dataType: string
+		lineageTag: dda5dd7b-d75e-5016-af7d-2492845e67e4
+		summarizeBy: none
+		sourceColumn: faixa_parcelas
+		sortByColumn: faixa_parcelas_ordem
+
+		annotation SummarizationSetBy = User
+
+	column faixa_parcelas_ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 78ef08f0-e6b7-51ab-a10d-609c80126a6a
+		summarizeBy: none
+		sourceColumn: faixa_parcelas_ordem
+
+		annotation SummarizationSetBy = User
+
+	column mes_coorte_label
+		dataType: string
+		lineageTag: 656a366a-4ab4-54a3-be03-6355df89793f
+		summarizeBy: none
+		sourceColumn: mes_coorte_label
+		sortByColumn: meses_desde_coorte
+
+		annotation SummarizationSetBy = User
+
+	column coorte_mes_num
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: df21f3ce-6d08-5eb5-ad54-05fffa9dc28b
+		summarizeBy: none
+		sourceColumn: coorte_mes_num
+
+		annotation SummarizationSetBy = User
+
+	partition fato_pedidos = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("fato_pedidos.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"order_id", "data_compra", "ano_mes", "data_aprovacao", "data_entrega_estimada", "data_entrega_real", "dias_entrega", "dias_atraso", "flag_atraso", "faixa_atraso", "status", "flag_entregue", "uf_cliente", "categoria_principal", "nota_review", "qtd_itens", "valor_produtos", "valor_frete", "valor_total_nominal", "valor_total_real_ipca", "tipo_pagamento_principal", "parcelas", "cliente_unico_id", "coorte_mes", "meses_desde_coorte", "flag_recompra", "flag_frete_outlier"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"order_id", "data_compra", "ano_mes", "data_aprovacao", "data_entrega_estimada", "data_entrega_real", "dias_entrega", "dias_atraso", "flag_atraso", "faixa_atraso", "status", "flag_entregue", "uf_cliente", "categoria_principal", "nota_review", "qtd_itens", "valor_produtos", "valor_frete", "valor_total_nominal", "valor_total_real_ipca", "tipo_pagamento_principal", "parcelas", "cliente_unico_id", "coorte_mes", "meses_desde_coorte", "flag_recompra", "flag_frete_outlier"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"order_id", type text}, {"data_compra", type date}, {"ano_mes", type text}, {"data_aprovacao", type date}, {"data_entrega_estimada", type date}, {"data_entrega_real", type date}, {"dias_entrega", Int64.Type}, {"dias_atraso", Int64.Type}, {"flag_atraso", Int64.Type}, {"faixa_atraso", type text}, {"status", type text}, {"flag_entregue", Int64.Type}, {"uf_cliente", type text}, {"categoria_principal", type text}, {"nota_review", Int64.Type}, {"qtd_itens", Int64.Type}, {"valor_produtos", type number}, {"valor_frete", type number}, {"valor_total_nominal", type number}, {"valor_total_real_ipca", type number}, {"tipo_pagamento_principal", type text}, {"parcelas", Int64.Type}, {"cliente_unico_id", type text}, {"coorte_mes", type text}, {"meses_desde_coorte", Int64.Type}, {"flag_recompra", Int64.Type}, {"flag_frete_outlier", Int64.Type}}, "en-US"),
+				    ComPagamentoPt = Table.AddColumn(Tipada, "tipo_pagamento_pt", each if [tipo_pagamento_principal] = "credit_card" then "Cartão de Crédito" else if [tipo_pagamento_principal] = "boleto" then "Boleto Bancário" else if [tipo_pagamento_principal] = "voucher" then "Voucher / Cupom" else if [tipo_pagamento_principal] = "debit_card" then "Cartão de Débito" else if [tipo_pagamento_principal] = "not_defined" then "Não definido" else "Sem registro", type text),
+				    ComParcelasOrdem = Table.AddColumn(ComPagamentoPt, "faixa_parcelas_ordem", each if [parcelas] = null or [parcelas] <= 0 then 0 else if [parcelas] >= 10 then 10 else [parcelas], Int64.Type),
+				    ComFaixaParcelas = Table.AddColumn(ComParcelasOrdem, "faixa_parcelas", each if [faixa_parcelas_ordem] = 0 then "Sem info" else if [faixa_parcelas_ordem] = 10 then "10x+" else Text.From([faixa_parcelas_ordem]) & "x", type text),
+				    ComCoorteLabel = Table.AddColumn(ComFaixaParcelas, "mes_coorte_label", each if [meses_desde_coorte] = 0 then "M0" else "M+" & Text.From([meses_desde_coorte]), type text),
+				    ComCoorteNum = Table.AddColumn(ComCoorteLabel, "coorte_mes_num", each Int64.From(Text.Replace([coorte_mes], "-", "")), Int64.Type)
+				in
+				    ComCoorteNum
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,28 @@
+uf,codigo_ibge,nome,regiao_sigla,regiao,populacao_ibge,populacao_censo_2022
+AC,12,Acre,N,Norte,869265,830018
+AL,27,Alagoas,NE,Nordeste,3322820,3127683
+AM,13,Amazonas,N,Norte,4080611,3941613
+AP,16,Amapá,N,Norte,829494,733759
+BA,29,Bahia,NE,Nordeste,14812617,14141626
+CE,23,Ceará,NE,Nordeste,9075649,8794957
+DF,53,Distrito Federal,CO,Centro-Oeste,2974703,2817381
+ES,32,Espírito Santo,SE,Sudeste,3972388,3833712
+GO,52,Goiás,CO,Centro-Oeste,6921161,7056495
+MA,21,Maranhão,NE,Nordeste,7035055,6776699
+MG,31,Minas Gerais,SE,Sudeste,21040662,20539989
+MS,50,Mato Grosso do Sul,CO,Centro-Oeste,2748023,2757013
+MT,51,Mato Grosso,CO,Centro-Oeste,3441998,3658649
+PA,15,Pará,N,Norte,8513497,8120131
+PB,25,Paraíba,NE,Nordeste,3996496,3974687
+PE,26,Pernambuco,NE,Nordeste,9496294,9058931
+PI,22,Piauí,NE,Nordeste,3264531,3271199
+PR,41,Paraná,S,Sul,11348937,11444380
+RJ,33,Rio de Janeiro,SE,Sudeste,17159960,16055174
+RN,24,Rio Grande do Norte,NE,Nordeste,3479010,3302729
+RO,11,Rondônia,N,Norte,1757589,1581196
+RR,14,Roraima,N,Norte,576568,636707
+RS,43,Rio Grande do Sul,S,Sul,11329605,10882965
+SC,42,Santa Catarina,S,Sul,7075494,7610361
+SE,28,Sergipe,NE,Nordeste,2278308,2210004
+SP,35,São Paulo,SE,Sudeste,45538936,44411238
+TO,17,Tocantins,N,Norte,1555229,1511460

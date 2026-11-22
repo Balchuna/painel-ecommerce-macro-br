@@ -1,0 +1,7 @@
+numpy>=1.26.0,<3
+pandas>=2.2.0,<4
+pillow>=10.0.0
+pypdfium2>=4.30.0
+pytest>=8.0.0
+pywin32==311; sys_platform == "win32"
+requests>=2.31.0,<3

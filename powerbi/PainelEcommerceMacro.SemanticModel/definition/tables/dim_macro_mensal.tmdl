@@ -1,0 +1,83 @@
+/// Série mensal do Banco Central SGS: IPCA (433), Selic meta (432) e Dólar PTAX (1).
+table dim_macro_mensal
+	lineageTag: f786920f-bb3f-5728-9256-0e3a1b4ece15
+
+	column ano_mes
+		dataType: string
+		lineageTag: 01567c7b-24e8-5d7a-bea6-52c29bb91a71
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = User
+
+	column data_mes
+		dataType: dateTime
+		formatString: dd/MM/yyyy
+		lineageTag: 94cee207-3788-5238-957c-db8547db73e6
+		summarizeBy: none
+		sourceColumn: data_mes
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column ipca_mensal_pct
+		dataType: double
+		lineageTag: 819fbfd3-aec1-5229-afe9-c3be058b9109
+		summarizeBy: none
+		sourceColumn: ipca_mensal_pct
+
+		annotation SummarizationSetBy = User
+
+	column ipca_acum_12m_pct
+		dataType: double
+		lineageTag: 12ef0377-e3cf-510b-a8cb-2b31cfe5fe58
+		summarizeBy: none
+		sourceColumn: ipca_acum_12m_pct
+
+		annotation SummarizationSetBy = User
+
+	column indice_ipca_base100
+		dataType: double
+		lineageTag: d79ea831-ac72-581e-86a6-61397fc9ce83
+		summarizeBy: none
+		sourceColumn: indice_ipca_base100
+
+		annotation SummarizationSetBy = User
+
+	column fator_deflator
+		dataType: double
+		lineageTag: 7398196a-53b8-52b5-9423-c633bb29546e
+		summarizeBy: none
+		sourceColumn: fator_deflator
+
+		annotation SummarizationSetBy = User
+
+	column selic_media
+		dataType: double
+		lineageTag: 17e64757-ada1-513d-886b-48012858b9b8
+		summarizeBy: none
+		sourceColumn: selic_media
+
+		annotation SummarizationSetBy = User
+
+	column ptax_media
+		dataType: double
+		lineageTag: 8f350dff-8d9e-548e-8efa-9e668181a089
+		summarizeBy: none
+		sourceColumn: ptax_media
+
+		annotation SummarizationSetBy = User
+
+	partition dim_macro_mensal = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_macro_mensal.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"ano_mes", "data_mes", "ipca_mensal_pct", "ipca_acum_12m_pct", "indice_ipca_base100", "fator_deflator", "selic_media", "ptax_media"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"ano_mes", "data_mes", "ipca_mensal_pct", "ipca_acum_12m_pct", "indice_ipca_base100", "fator_deflator", "selic_media", "ptax_media"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"ano_mes", type text}, {"data_mes", type date}, {"ipca_mensal_pct", type number}, {"ipca_acum_12m_pct", type number}, {"indice_ipca_base100", type number}, {"fator_deflator", type number}, {"selic_media", type number}, {"ptax_media", type number}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

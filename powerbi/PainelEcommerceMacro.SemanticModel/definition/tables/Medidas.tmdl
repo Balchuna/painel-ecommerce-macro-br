@@ -1,0 +1,732 @@
+/// Tabela técnica vazia que centraliza todas as medidas DAX do painel.
+table Medidas
+	lineageTag: 7317933b-0d3f-5afe-b40b-b3babfc103cd
+
+	/// Total de pedidos presentes na base bruta Olist (inclui cancelados e não entregues).
+	measure 'Pedidos Brutos' = COUNTROWS ( fato_pedidos )
+		formatString: #,0
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: d517ce7a-ec15-5b8b-86c4-01ec74241cbb
+
+	/// Pedidos efetivamente entregues ao cliente (status = delivered / flag_entregue = 1).
+	measure 'Pedidos Entregues' =
+			CALCULATE (
+			    COUNTROWS ( fato_pedidos ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: 30e406d8-3be6-5a48-9a9e-d94efd804281
+
+	/// Pedidos cancelados, indisponíveis ou em trânsito que não entram nas métricas comerciais.
+	measure 'Pedidos Não Entregues' =
+			CALCULATE (
+			    COUNTROWS ( fato_pedidos ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 0 )
+			)
+		formatString: #,0
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: f63ace4a-3f6a-5d4d-904a-adb40415319a
+
+	/// Participação dos pedidos não entregues sobre o total bruto Olist.
+	measure '% Excluídos da Análise' = DIVIDE ( [Pedidos Não Entregues], [Pedidos Brutos] )
+		formatString: 0.0%
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: be8d4cee-8695-5a49-977b-652c8103e423
+
+	/// Compradores únicos (customer_unique_id) com pelo menos um pedido entregue no contexto.
+	measure 'Clientes Únicos' =
+			CALCULATE (
+			    DISTINCTCOUNT ( fato_pedidos[cliente_unico_id] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: abd2ba01-aec8-5131-9fd4-775518b48f2a
+
+	/// Soma de itens vendidos em pedidos entregues.
+	measure 'Itens Vendidos' =
+			CALCULATE (
+			    SUM ( fato_pedidos[qtd_itens] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: 6463a224-dc10-55c9-b3c2-64a57bb92346
+
+	/// Média de itens por pedido entregue.
+	measure 'Itens por Pedido' = DIVIDE ( [Itens Vendidos], [Pedidos Entregues] )
+		formatString: 0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: 801106f6-ff5b-50c1-990d-8538a6fd4858
+
+	/// GMV nominal (produtos + frete) de pedidos entregues em R$ correntes da data da compra.
+	measure 'GMV Nominal' =
+			CALCULATE (
+			    SUM ( fato_pedidos[valor_total_nominal] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: f06bc9b6-3a32-555a-8d15-83b346202d71
+
+	/// GMV real deflacionado pelo IPCA acumulado (BCB SGS 433) em R$ constantes de out/2018.
+	measure 'GMV Real IPCA' =
+			CALCULATE (
+			    SUM ( fato_pedidos[valor_total_real_ipca] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: bd9d5633-12d6-5e32-9379-acf2c9035d41
+
+	/// Receita nominal apenas de produtos (excluindo frete) em pedidos entregues.
+	measure 'Receita Produtos Nominal' =
+			CALCULATE (
+			    SUM ( fato_pedidos[valor_produtos] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: de8bf9ea-550b-5743-8801-9b3e72a078a2
+
+	/// Soma nominal do frete cobrado em pedidos entregues.
+	measure 'Frete Nominal' =
+			CALCULATE (
+			    SUM ( fato_pedidos[valor_frete] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: 23d91300-2b29-59bd-b3ed-0186b7cfc64a
+
+	/// Peso do frete no GMV nominal de pedidos entregues.
+	measure 'Frete % do GMV' = DIVIDE ( [Frete Nominal], [GMV Nominal] )
+		formatString: 0.0%
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: dcd19904-2211-5d92-accb-6a168b3efc59
+
+	/// Ticket médio nominal por pedido entregue (R$ correntes).
+	measure 'Ticket Médio Nominal' = DIVIDE ( [GMV Nominal], [Pedidos Entregues] )
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: c076bf00-90cc-5e28-90f1-64ad447ea53d
+
+	/// Ticket médio real por pedido entregue (R$ constantes de out/2018).
+	measure 'Ticket Médio Real' = DIVIDE ( [GMV Real IPCA], [Pedidos Entregues] )
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: d0b4753d-5bc3-599b-bc08-37d4c56f94e8
+
+	/// Variação mensal média do IPCA no período selecionado (BCB SGS 433).
+	measure 'IPCA Mensal %' = DIVIDE ( AVERAGE ( dim_macro_mensal[ipca_mensal_pct] ), 100 )
+		formatString: 0.00%
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: c3388fc3-e2f2-521b-be3e-acd2c423ed17
+
+	/// IPCA acumulado em 12 meses médio no período selecionado (BCB SGS 433).
+	measure 'IPCA 12m %' = DIVIDE ( AVERAGE ( dim_macro_mensal[ipca_acum_12m_pct] ), 100 )
+		formatString: 0.00%
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: 5c89cc23-bd36-556b-8dcf-f328c53a9762
+
+	/// Taxa Selic meta média mensal no período selecionado (BCB SGS 432, % a.a.).
+	measure 'Selic Média %' = DIVIDE ( AVERAGE ( dim_macro_mensal[selic_media] ), 100 )
+		formatString: 0.00%
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: a722ab69-c7da-53e1-a48f-eb0d3398c7a2
+
+	/// Cotação média mensal do dólar americano PTAX venda (BCB SGS 1, R$/US$).
+	measure 'Dólar PTAX Médio' = AVERAGE ( dim_macro_mensal[ptax_media] )
+		formatString: R$ #,0.00
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: c4ff93db-ae27-552a-ad7c-cdff64bf3723
+
+	/// Fator médio de deflação IPCA para base out/2018 (= 1,0000 em 2018-10).
+	measure 'Fator Deflator Médio' = AVERAGE ( dim_macro_mensal[fator_deflator] )
+		formatString: 0.0000
+		displayFolder: 01. Receita, Volume & Macro
+		lineageTag: e9bc8098-8051-5ed4-a116-d3453901d2a2
+
+	/// GMV Real IPCA do mês imediatamente anterior no calendário.
+	measure 'GMV Real Mês Anterior' =
+			CALCULATE (
+			    [GMV Real IPCA],
+			    DATEADD ( dim_calendario[data], -1, MONTH )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: 65f8d584-beb7-553b-a931-6a047bded1f4
+
+	/// Variação mês contra mês (MoM %) do GMV Real IPCA quando ambos os meses possuem vendas.
+	measure 'GMV Real MoM %' =
+			VAR Atual = [GMV Real IPCA]
+			VAR Anterior = [GMV Real Mês Anterior]
+			RETURN
+			    IF ( Atual > 0 && Anterior > 0, DIVIDE ( Atual - Anterior, Anterior ) )
+		formatString: 0.0%
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: ac9be27c-14ba-5cfc-b2df-3c01e6c5a693
+
+	/// GMV Real IPCA do mesmo período no ano anterior.
+	measure 'GMV Real Ano Anterior' =
+			CALCULATE (
+			    [GMV Real IPCA],
+			    SAMEPERIODLASTYEAR ( dim_calendario[data] )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: b22ea611-f989-5399-ab46-ce3d0f2f9b9a
+
+	/// Variação ano contra ano (YoY %) do GMV Real IPCA quando ambos os períodos possuem vendas.
+	measure 'GMV Real YoY %' =
+			VAR Atual = [GMV Real IPCA]
+			VAR Anterior = [GMV Real Ano Anterior]
+			RETURN
+			    IF ( Atual > 0 && Anterior > 0, DIVIDE ( Atual - Anterior, Anterior ) )
+		formatString: 0.0%
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: 9c7c1d53-23ff-5ce0-bc67-51a415a34cd0
+
+	/// Média móvel de 3 meses do GMV Real IPCA (inclui meses com zero entregas como 0, igual ao SQL).
+	measure 'GMV Real Média Móvel 3m' =
+			VAR DataMax = MAX ( dim_calendario[data] )
+			VAR Janela = DATESINPERIOD ( dim_calendario[data], DataMax, -3, MONTH )
+			RETURN
+			    AVERAGEX (
+			        CALCULATETABLE ( VALUES ( dim_calendario[ano_mes] ), Janela ),
+			        COALESCE ( [GMV Real IPCA], 0 )
+			    )
+		formatString: R$ #,0.00
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: cf5ad062-0acb-5108-aa52-a36a4ce57e30
+
+	/// GMV Real IPCA acumulado desde o início da série até a última data do contexto.
+	measure 'GMV Real Acumulado' =
+			VAR DataMax = MAX ( dim_calendario[data] )
+			RETURN
+			    CALCULATE (
+			        [GMV Real IPCA],
+			        FILTER ( ALL ( dim_calendario ), dim_calendario[data] <= DataMax )
+			    )
+		formatString: R$ #,0.00
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: 95067ab5-2197-5e79-9a90-85e4259290ae
+
+	/// Crescimento nominal homogêneo Jan–Ago 2018 vs Jan–Ago 2017 (evita viés da cauda parcial set–out/2018).
+	measure 'GMV Nominal YoY Jan-Ago %' =
+			VAR Atual =
+			    CALCULATE (
+			        [GMV Nominal],
+			        dim_calendario[ano] = 2018,
+			        dim_calendario[mes] <= 8
+			    )
+			VAR Anterior =
+			    CALCULATE (
+			        [GMV Nominal],
+			        dim_calendario[ano] = 2017,
+			        dim_calendario[mes] <= 8
+			    )
+			RETURN
+			    IF ( Atual > 0 && Anterior > 0, DIVIDE ( Atual - Anterior, Anterior ) )
+		formatString: 0.0%
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: c0040197-1a99-5fc1-9732-df8eebb8a1d6
+
+	/// Crescimento real (IPCA) homogêneo Jan–Ago 2018 vs Jan–Ago 2017.
+	measure 'GMV Real YoY Jan-Ago %' =
+			VAR Atual =
+			    CALCULATE (
+			        [GMV Real IPCA],
+			        dim_calendario[ano] = 2018,
+			        dim_calendario[mes] <= 8
+			    )
+			VAR Anterior =
+			    CALCULATE (
+			        [GMV Real IPCA],
+			        dim_calendario[ano] = 2017,
+			        dim_calendario[mes] <= 8
+			    )
+			RETURN
+			    IF ( Atual > 0 && Anterior > 0, DIVIDE ( Atual - Anterior, Anterior ) )
+		formatString: 0.0%
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: 1dbf27e8-fa07-59f1-9e55-971760d72059
+
+	/// Crescimento de volume de pedidos entregues na janela homogênea Jan–Ago 2018 vs Jan–Ago 2017.
+	measure 'Pedidos YoY Jan-Ago %' =
+			VAR Atual =
+			    CALCULATE (
+			        [Pedidos Entregues],
+			        dim_calendario[ano] = 2018,
+			        dim_calendario[mes] <= 8
+			    )
+			VAR Anterior =
+			    CALCULATE (
+			        [Pedidos Entregues],
+			        dim_calendario[ano] = 2017,
+			        dim_calendario[mes] <= 8
+			    )
+			RETURN
+			    IF ( Atual > 0 && Anterior > 0, DIVIDE ( Atual - Anterior, Anterior ) )
+		formatString: 0.0%
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: c5605b64-12b3-5f72-aada-07e76e07d8b5
+
+	/// Diferença em pontos percentuais entre crescimento nominal e real (Jan–Ago 2018 vs 2017).
+	measure 'Efeito Inflação YoY (p.p.)' = ( [GMV Nominal YoY Jan-Ago %] - [GMV Real YoY Jan-Ago %] ) * 100
+		formatString: +0.0 "p.p.";-0.0 "p.p.";0.0 "p.p."
+		displayFolder: 02. Inteligência Temporal (Time Intelligence)
+		lineageTag: cb22dcb6-3491-55b2-a0e0-693fd15e4dd6
+
+	/// Pedidos entregues que possuem timestamp real de entrega válido (denominador oficial do SLA).
+	measure 'Entregas com Data Válida' =
+			CALCULATE (
+			    COUNTROWS ( fato_pedidos ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( NOT ISBLANK ( fato_pedidos[data_entrega_real] ) )
+			)
+		formatString: #,0
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: cf6bb73a-2906-5936-a7a1-ac8fdc68d459
+
+	/// Pedidos entregues até a data estimada informada ao cliente (flag_atraso == 0, exclui nulos).
+	measure 'Entregas no Prazo' =
+			CALCULATE (
+			    COUNTROWS ( fato_pedidos ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( NOT ISBLANK ( fato_pedidos[flag_atraso] ) ),
+			    KEEPFILTERS ( fato_pedidos[flag_atraso] == 0 )
+			)
+		formatString: #,0
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: d9651bd9-6dfb-56b2-8544-cc88f76b4e3b
+
+	/// Pedidos entregues após a data estimada (flag_atraso = 1).
+	measure 'Entregas Atrasadas' =
+			CALCULATE (
+			    COUNTROWS ( fato_pedidos ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( fato_pedidos[flag_atraso] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: 97ece9bc-15f5-59fc-b82a-4ab7f90b5d45
+
+	/// Taxa de pontualidade logística (SLA): entregas no prazo sobre entregas com data real válida.
+	measure '% Entregas no Prazo' = DIVIDE ( [Entregas no Prazo], [Entregas com Data Válida] )
+		formatString: 0.0%
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: b7105cb2-dd5a-5067-b56a-fab79274b97f
+
+	/// Prazo médio de entrega em dias corridos entre a data da compra e a entrega ao cliente.
+	measure 'Prazo Médio Entrega (d)' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[dias_entrega] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: 0.0 "d"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: 32630353-d385-532e-a93a-c4c8adc42845
+
+	/// Média de dias de atraso considerando apenas pedidos entregues em atraso.
+	measure 'Atraso Médio quando Atrasa (d)' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[dias_atraso] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( fato_pedidos[flag_atraso] = 1 )
+			)
+		formatString: 0.0 "d"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: 4d3c7450-4806-5c63-b188-2bcd57593725
+
+	/// Nota média de avaliação do cliente (escala 1 a 5 estrelas) em pedidos entregues.
+	measure 'Nota Média' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[nota_review] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 )
+			)
+		formatString: 0.00 "★"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: a19aa43d-34f3-5f0f-9213-9105b0acecea
+
+	/// Nota média de avaliação em pedidos entregues dentro do prazo estimado (exclui nulos).
+	measure 'Nota Média no Prazo' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[nota_review] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( NOT ISBLANK ( fato_pedidos[flag_atraso] ) ),
+			    KEEPFILTERS ( fato_pedidos[flag_atraso] == 0 )
+			)
+		formatString: 0.00 "★"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: 621df7a5-c5e2-5b4d-b67f-4d485bb2dae6
+
+	/// Nota média de avaliação em pedidos entregues com atraso.
+	measure 'Nota Média Atrasado' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[nota_review] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( fato_pedidos[flag_atraso] = 1 )
+			)
+		formatString: 0.00 "★"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: e3fbb60f-8f25-5d7f-b07c-eaf117b4cdb4
+
+	/// Queda na nota média provocada pelo atraso na entrega (Nota Atrasado - Nota no Prazo).
+	measure 'Impacto Atraso na Nota' = [Nota Média Atrasado] - [Nota Média no Prazo]
+		formatString: +0.00 "★";-0.00 "★";0.00 "★"
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: 01b2d695-a5bb-5780-8b83-3573245b3a8f
+
+	/// População oficial IBGE (Estimativa 2018) somada sobre as UFs no contexto.
+	measure 'População IBGE' = SUM ( dim_geo_uf[populacao_ibge] )
+		formatString: #,0
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: ba356a94-7db6-586f-b181-af5a99fadae9
+
+	/// Penetração de e-commerce: GMV Real IPCA por 100 mil habitantes (IBGE 2018).
+	measure 'GMV Real / 100 mil hab.' = DIVIDE ( [GMV Real IPCA] * 100000, [População IBGE] )
+		formatString: R$ #,0.00
+		displayFolder: 03. Logística, SLA & Impacto no Cliente
+		lineageTag: daf02134-0163-5037-bc1b-8cbf8c6542b9
+
+	/// GMV real (IPCA) somado no grão de item (fato_itens_pedido) para análises de categoria e vendedor.
+	measure 'GMV Itens Real IPCA' =
+			CALCULATE (
+			    SUM ( fato_itens_pedido[valor_item_real_ipca] ),
+			    KEEPFILTERS ( fato_itens_pedido[flag_entregue] = 1 )
+			)
+		formatString: R$ #,0.00
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 4c06abb8-dfe4-5ed8-ad63-4e412176d682
+
+	/// Participação de cada categoria no GMV real total de itens entregues.
+	measure '% GMV Categorias' =
+			DIVIDE (
+			    [GMV Itens Real IPCA],
+			    CALCULATE (
+			        [GMV Itens Real IPCA],
+			        ALL ( dim_categoria[categoria_codigo], dim_categoria[categoria_pt], dim_categoria[categoria_en] )
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 4993983a-6d8d-51d0-8b01-1f17d98c5dda
+
+	/// Curva Pareto acumulada (% do GMV real) ordenada da maior categoria para a menor.
+	measure '% Acumulado GMV Categorias' =
+			VAR GmvAtual = [GMV Itens Real IPCA]
+			VAR CatAtual = SELECTEDVALUE ( dim_categoria[categoria_pt] )
+			VAR TotalCats =
+			    CALCULATE (
+			        [GMV Itens Real IPCA],
+			        ALL ( dim_categoria[categoria_codigo], dim_categoria[categoria_pt], dim_categoria[categoria_en] )
+			    )
+			VAR Acumulado =
+			    SUMX (
+			        FILTER (
+			            ALL ( dim_categoria[categoria_pt] ),
+			            VAR GmvLinha = [GMV Itens Real IPCA]
+			            RETURN
+			                GmvLinha > GmvAtual
+			                    || ( GmvLinha = GmvAtual && dim_categoria[categoria_pt] <= CatAtual )
+			        ),
+			        [GMV Itens Real IPCA]
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( GmvAtual ), DIVIDE ( Acumulado, TotalCats ) )
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 292b68a4-73c4-5e16-bd60-f1001bbfba5c
+
+	/// Participação de pedidos entregues pagos principalmente com cartão de crédito.
+	measure '% Pedidos Cartão' =
+			DIVIDE (
+			    CALCULATE (
+			        [Pedidos Entregues],
+			        KEEPFILTERS ( fato_pedidos[tipo_pagamento_principal] = "credit_card" )
+			    ),
+			    [Pedidos Entregues]
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 88d343e1-3a57-54e0-8f94-f283ef378d22
+
+	/// Participação de cada meio de pagamento no GMV real total entregue.
+	measure '% GMV Pagamento' =
+			DIVIDE (
+			    [GMV Real IPCA],
+			    CALCULATE (
+			        [GMV Real IPCA],
+			        ALL ( fato_pedidos[tipo_pagamento_principal], fato_pedidos[tipo_pagamento_pt] )
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: a37a6e21-bfa5-5991-af85-c9a70ea8221d
+
+	/// Média de parcelas em pedidos entregues pagos com cartão de crédito (excluindo 0 parcelas).
+	measure 'Parcelas Médias (Cartão)' =
+			CALCULATE (
+			    AVERAGE ( fato_pedidos[parcelas] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( fato_pedidos[tipo_pagamento_principal] = "credit_card" ),
+			    KEEPFILTERS ( fato_pedidos[parcelas] > 0 )
+			)
+		formatString: 0.00"x"
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: c762d74b-7905-5632-b1b3-f3a16a46e9a6
+
+	/// Percentual de pedidos no cartão de crédito pagos em 2 ou mais parcelas.
+	measure '% Cartão Parcelado' =
+			DIVIDE (
+			    CALCULATE (
+			        COUNTROWS ( fato_pedidos ),
+			        KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			        KEEPFILTERS ( fato_pedidos[tipo_pagamento_principal] = "credit_card" ),
+			        KEEPFILTERS ( fato_pedidos[parcelas] > 1 )
+			    ),
+			    CALCULATE (
+			        COUNTROWS ( fato_pedidos ),
+			        KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			        KEEPFILTERS ( fato_pedidos[tipo_pagamento_principal] = "credit_card" ),
+			        KEEPFILTERS ( fato_pedidos[parcelas] > 0 )
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: c682ff9c-0db8-5312-a7d7-790b5cdb55f9
+
+	/// Pedidos entregues pagos no cartão de crédito (usado na distribuição de parcelas).
+	measure 'Pedidos Cartão' =
+			CALCULATE (
+			    [Pedidos Entregues],
+			    KEEPFILTERS ( fato_pedidos[tipo_pagamento_principal] = "credit_card" ),
+			    KEEPFILTERS ( fato_pedidos[parcelas] > 0 )
+			)
+		formatString: #,0
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: af4e7252-15c4-53c0-bc3d-04e591190e16
+
+	/// Clientes únicos entregues com 2 ou mais pedidos concluídos na base.
+	measure 'Clientes Recompra' =
+			CALCULATE (
+			    DISTINCTCOUNT ( fato_pedidos[cliente_unico_id] ),
+			    KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			    KEEPFILTERS ( fato_pedidos[flag_recompra] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: a305418d-f6f6-5738-a5e3-30fe884748f1
+
+	/// Taxa de recompra: percentual de clientes únicos que realizaram mais de um pedido entregue.
+	measure '% Clientes Recompra' = DIVIDE ( [Clientes Recompra], [Clientes Únicos] )
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 8453d392-6573-5ef4-b329-ad8e37b5b19d
+
+	/// Retenção de coorte mensal: % dos clientes da coorte inicial que voltaram a comprar no mês M+n.
+	measure '% Retenção Coorte' =
+			VAR ClientesAtivos = [Clientes Únicos]
+			VAR ClientesBase =
+			    CALCULATE (
+			        DISTINCTCOUNT ( fato_pedidos[cliente_unico_id] ),
+			        KEEPFILTERS ( fato_pedidos[flag_entregue] = 1 ),
+			        REMOVEFILTERS ( dim_calendario ),
+			        REMOVEFILTERS ( fato_pedidos[meses_desde_coorte], fato_pedidos[mes_coorte_label] ),
+			        fato_pedidos[meses_desde_coorte] = 0
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( ClientesAtivos ), DIVIDE ( ClientesAtivos, ClientesBase ) )
+		formatString: 0.00%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: d1d19758-2388-50b5-8a9b-36f0ab354876
+
+	/// Quantidade de vendedores distintos com pelo menos um item entregue no contexto.
+	measure 'Vendedores Ativos' =
+			CALCULATE (
+			    DISTINCTCOUNT ( fato_itens_pedido[seller_id] ),
+			    KEEPFILTERS ( fato_itens_pedido[flag_entregue] = 1 )
+			)
+		formatString: #,0
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 2bbedc25-3cc6-5772-a50b-888ad78b99ae
+
+	/// Participação de cada decil de vendedores no GMV real total entregue.
+	measure '% GMV Vendedores' =
+			DIVIDE (
+			    [GMV Itens Real IPCA],
+			    CALCULATE (
+			        [GMV Itens Real IPCA],
+			        ALL ( dim_vendedor[decil_gmv], dim_vendedor[decil_ordem] )
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 48d66438-37f3-5f0c-92ed-ececaca4d5e7
+
+	/// Participação do decil D1 (top 10% vendedores) no GMV real entregue total.
+	measure '% GMV Top 10% Vendedores' =
+			DIVIDE (
+			    CALCULATE (
+			        [GMV Itens Real IPCA],
+			        dim_vendedor[decil_ordem] = 1
+			    ),
+			    CALCULATE (
+			        [GMV Itens Real IPCA],
+			        dim_vendedor[decil_ordem] >= 1 && dim_vendedor[decil_ordem] <= 10
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04. Comercial, Categorias, Pagamentos, Coorte & Vendedores
+		lineageTag: 7632cc03-2f7b-530f-a587-3cbd727f8351
+
+	/// Soma total de ocorrências detectadas nas 13 regras de auditoria de dados Olist.
+	measure 'Anomalias Detectadas' = SUM ( qualidade_auditoria[linhas_afetadas] )
+		formatString: #,0
+		displayFolder: 05. Qualidade & Auditoria
+		lineageTag: f041effe-8d33-5150-a403-7b872d0f39c1
+
+	/// Quantidade de regras de qualidade monitoradas na tabela qualidade_auditoria.
+	measure 'Regras de Qualidade' = COUNTROWS ( qualidade_auditoria )
+		formatString: #,0
+		displayFolder: 05. Qualidade & Auditoria
+		lineageTag: 16bb62ed-b44a-5422-95c8-f03ae81a79e2
+
+	/// Quantidade de avaliações duplicadas deduplicadas na limpeza (regra Q08).
+	measure 'Reviews Duplicadas' =
+			CALCULATE (
+			    SUM ( qualidade_auditoria[linhas_afetadas] ),
+			    qualidade_auditoria[regra_id] = "Q08_AVALIACOES_DUPLICADAS"
+			)
+		formatString: #,0
+		displayFolder: 05. Qualidade & Auditoria
+		lineageTag: 26d011e6-b1db-5d00-9fea-73bc2f60ca36
+
+	/// Selo de conferência do gabarito SQL (6 de 6 consultas auditadas).
+	measure 'Selo Gabarito SQL' = "✓ 6/6"
+		displayFolder: 05. Qualidade & Auditoria
+		lineageTag: f8a8b30c-8c34-53a4-9c03-247107ea1255
+
+	/// Subtítulo dinâmico do cartão GMV Nominal (variação homogênea Jan–Ago 2018 vs 2017).
+	measure 'Delta GMV Nominal Texto' =
+			VAR VarYoY = [GMV Nominal YoY Jan-Ago %]
+			RETURN
+			    IF (
+			        ISBLANK ( VarYoY ),
+			        "R$ correntes (entregues)",
+			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: c94293ee-2223-5157-8648-3405ffce1fc8
+
+	/// Subtítulo dinâmico do cartão GMV Real IPCA (variação homogênea Jan–Ago 2018 vs 2017).
+	measure 'Delta GMV Real Texto' =
+			VAR VarYoY = [GMV Real YoY Jan-Ago %]
+			RETURN
+			    IF (
+			        ISBLANK ( VarYoY ),
+			        "R$ constantes out/2018",
+			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 06d3f72b-bdd9-5d23-9ef8-06502331467e
+
+	/// Subtítulo dinâmico do cartão Pedidos Entregues (variação homogênea Jan–Ago 2018 vs 2017).
+	measure 'Delta Pedidos Texto' =
+			VAR VarYoY = [Pedidos YoY Jan-Ago %]
+			RETURN
+			    IF (
+			        ISBLANK ( VarYoY ),
+			        "base entregue Olist",
+			        IF ( VarYoY >= 0, "▲ ", "▼ " ) & FORMAT ( ABS ( VarYoY ), "0.0%" ) & " Jan–Ago 18/17"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: e94c1d47-bed2-50be-97be-9ea2597aeb66
+
+	/// Cor semântica para deltas positivos de receita/volume (teal bom, coral ruim, muted neutro).
+	measure 'Cor Delta GMV Real' =
+			VAR VarYoY = [GMV Real YoY Jan-Ago %]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( VarYoY ), "#64748B",
+			        VarYoY >= 0, "#0D9488",
+			        "#DC2626"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: c4b70dd6-9582-5547-9ca9-62ae85f4c49b
+
+	/// Cor de fonte condicional do % Entregas no Prazo na tabela de UFs (>=92% teal, <85% coral).
+	measure 'Cor SLA UF' =
+			VAR Taxa = [% Entregas no Prazo]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( Taxa ), BLANK (),
+			        Taxa >= 0.92, "#0D9488",
+			        Taxa < 0.85, "#DC2626",
+			        "#334155"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 28492305-b421-56b7-993d-f7b016ca131b
+
+	/// Escala ordinal de cor das 5 faixas de atraso logístico (página 2, visual-herói).
+	measure 'Cor Faixa Atraso' =
+			SWITCH (
+			    SELECTEDVALUE ( dim_faixa_atraso[ordem] ),
+			    1, "#0D9488",
+			    2, "#FCA5A5",
+			    3, "#F87171",
+			    4, "#DC2626",
+			    5, "#991B1B",
+			    "#94A3B8"
+			)
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 138b75ac-2751-58ae-b9f8-62f7d15b0d21
+
+	/// Escala de fundo branco -> teal para o mapa de calor da matriz de retenção de coorte (página 3).
+	measure 'Cor Retenção Coorte' =
+			VAR Ret = [% Retenção Coorte]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( Ret ), "#FFFFFF",
+			        Ret >= 0.008, "#0D9488",
+			        Ret >= 0.005, "#2DD4BF",
+			        Ret >= 0.003, "#5EEAD4",
+			        Ret > 0, "#CCFBF1",
+			        "#FFFFFF"
+			    )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: a955d5f9-7362-5d95-a93f-c35c291babe2
+
+	/// Destaque de cor da matriz de concentração de vendedores (D1 coral, demais navy-300).
+	measure 'Cor Decil Vendedores' = IF ( SELECTEDVALUE ( dim_vendedor[decil_ordem] ) = 1, "#DC2626", "#A9BCD3" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: 4dec0b06-a963-5ad3-aeda-f2c94a84c381
+
+	/// Destaque de cor da distribuição de parcelas (1x navy, demais navy-300).
+	measure 'Cor Parcelas' = IF ( SELECTEDVALUE ( fato_pedidos[faixa_parcelas_ordem] ) = 1, "#1E3A5F", "#A9BCD3" )
+		displayFolder: 06. Subtítulos Dinâmicos (Deltas KPI) & Formatação Condicional
+		lineageTag: c1f74910-cf02-5bfb-89c8-7474d95d8ac6
+
+	column oculta
+		dataType: string
+		isHidden
+		lineageTag: 55a54ff4-b089-53ac-9b3f-5676033decbe
+		summarizeBy: none
+		sourceColumn: oculta
+
+		annotation SummarizationSetBy = User
+
+	partition Medidas = m
+		mode: import
+		source =
+				let
+				    Medidas = #table(type table [oculta = text], {})
+				in
+				    Medidas
+
+	annotation PBI_ResultType = Table

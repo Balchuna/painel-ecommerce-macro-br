@@ -1,0 +1,187 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "tabela_auditoria",
+  "position": {
+    "x": 24,
+    "y": 208,
+    "z": 8,
+    "height": 476,
+    "width": 632,
+    "tabOrder": 8
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "qualidade_auditoria"
+                    }
+                  },
+                  "Property": "regra"
+                }
+              },
+              "queryRef": "qualidade_auditoria.regra",
+              "nativeQueryRef": "Regra",
+              "displayName": "Regra"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "qualidade_auditoria"
+                    }
+                  },
+                  "Property": "tabela_curta"
+                }
+              },
+              "queryRef": "qualidade_auditoria.tabela_curta",
+              "nativeQueryRef": "Origem",
+              "displayName": "Origem"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "qualidade_auditoria"
+                    }
+                  },
+                  "Property": "linhas_afetadas"
+                }
+              },
+              "queryRef": "qualidade_auditoria.linhas_afetadas",
+              "nativeQueryRef": "Linhas",
+              "displayName": "Linhas"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "qualidade_auditoria"
+                    }
+                  },
+                  "Property": "pct_base_frac"
+                }
+              },
+              "queryRef": "qualidade_auditoria.pct_base_frac",
+              "nativeQueryRef": "% Base",
+              "displayName": "% Base"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "qualidade_auditoria"
+                    }
+                  },
+                  "Property": "tipo_curto"
+                }
+              },
+              "queryRef": "qualidade_auditoria.tipo_curto",
+              "nativeQueryRef": "Tipo",
+              "displayName": "Tipo"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "qualidade_auditoria"
+                  }
+                },
+                "Property": "linhas_afetadas"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'13 regras de qualidade aplicadas — nada é descartado em silêncio'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Anomalias reais da base pública Olist com tratamento determinístico documentado.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

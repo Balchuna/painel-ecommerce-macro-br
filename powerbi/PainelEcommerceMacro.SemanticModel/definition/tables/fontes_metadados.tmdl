@@ -1,0 +1,109 @@
+/// Linhagem completa dos arquivos e endpoints públicos (Olist, BCB SGS e IBGE).
+table fontes_metadados
+	lineageTag: e9d0e0b5-ff28-5dcc-95bc-5ec121e049a8
+
+	column arquivo
+		dataType: string
+		lineageTag: 8a164ff2-c977-5101-b172-95beb14580e7
+		summarizeBy: none
+		sourceColumn: arquivo
+
+		annotation SummarizationSetBy = User
+
+	column fonte
+		dataType: string
+		lineageTag: c89291dd-9aab-56dd-96cf-ba39f4b4a3c5
+		summarizeBy: none
+		sourceColumn: fonte
+
+		annotation SummarizationSetBy = User
+
+	column endpoint
+		dataType: string
+		lineageTag: 260f2403-d182-5be8-b272-74c646a1a831
+		summarizeBy: none
+		sourceColumn: endpoint
+
+		annotation SummarizationSetBy = User
+
+	column registros
+		dataType: int64
+		formatString: #,0
+		lineageTag: 79d64ccb-4eaf-536e-8192-1d39ec7bc222
+		summarizeBy: none
+		sourceColumn: registros
+
+		annotation SummarizationSetBy = User
+
+	column bytes_total
+		dataType: int64
+		formatString: 0
+		lineageTag: 2bf7e21e-3481-55fa-874c-749ad32dba8f
+		summarizeBy: none
+		sourceColumn: bytes_total
+
+		annotation SummarizationSetBy = User
+
+	column sha256
+		dataType: string
+		lineageTag: 5717ecd3-8f4f-547e-b3c7-f89d5fd6dddd
+		summarizeBy: none
+		sourceColumn: sha256
+
+		annotation SummarizationSetBy = User
+
+	column coletado_em_utc
+		dataType: string
+		lineageTag: 6cc2e26d-9af6-505b-a078-abbefa049231
+		summarizeBy: none
+		sourceColumn: coletado_em_utc
+
+		annotation SummarizationSetBy = User
+
+	column licenca
+		dataType: string
+		lineageTag: ef1bfa36-51da-59dd-8621-23253efd4604
+		summarizeBy: none
+		sourceColumn: licenca
+
+		annotation SummarizationSetBy = User
+
+	column coletado_data
+		dataType: string
+		lineageTag: 1c48fed4-e5dc-5c48-aad2-521958b3e2df
+		summarizeBy: none
+		sourceColumn: coletado_data
+
+		annotation SummarizationSetBy = User
+
+	column licenca_curta
+		dataType: string
+		lineageTag: 44189abf-aa45-5e65-8757-b69e3c0ea6e7
+		summarizeBy: none
+		sourceColumn: licenca_curta
+
+		annotation SummarizationSetBy = User
+
+	column arquivo_curto
+		dataType: string
+		lineageTag: 4a550359-8c2f-5657-860b-65ded1b6a0ff
+		summarizeBy: none
+		sourceColumn: arquivo_curto
+
+		annotation SummarizationSetBy = User
+
+	partition fontes_metadados = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("fontes_metadados.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"arquivo", "fonte", "endpoint", "registros", "bytes_total", "sha256", "coletado_em_utc", "licenca"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"arquivo", "fonte", "endpoint", "registros", "bytes_total", "sha256", "coletado_em_utc", "licenca"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"arquivo", type text}, {"fonte", type text}, {"endpoint", type text}, {"registros", Int64.Type}, {"bytes_total", Int64.Type}, {"sha256", type text}, {"coletado_em_utc", type text}, {"licenca", type text}}, "en-US"),
+				    ComData = Table.AddColumn(Tipada, "coletado_data", each Text.Start([coletado_em_utc], 10), type text),
+				    ComLicenca = Table.AddColumn(ComData, "licenca_curta", each if Text.Contains([licenca], "CC BY-NC-SA") then "CC BY-NC-SA 4.0" else if Text.Contains([licenca], "Banco Central") then "BCB Público" else "IBGE Público", type text),
+				    ComArqCurto = Table.AddColumn(ComLicenca, "arquivo_curto", each Text.Replace(Text.Replace(Text.Replace([arquivo], "olist_", ""), "_dataset", ""), "product_category_name_translation.csv", "cat_translation.csv"), type text)
+				in
+				    ComArqCurto
+
+	annotation PBI_ResultType = Table

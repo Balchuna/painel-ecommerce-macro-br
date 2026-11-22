@@ -1,0 +1,75 @@
+ranking,categoria_codigo,categoria_pt,categoria_en,pedidos_entregues,itens_vendidos,gmv_nominal,gmv_real_ipca,pct_gmv_real,pct_gmv_acumulado,no_pareto_80,preco_medio_item,pct_frete_gmv,nota_media
+1,beleza_saude,Beleza e Saúde,Health & Beauty,8647,9465,1412271.15,1457794.69,9.13,9.13,1,130.28,12.68,4.19
+2,relogios_presentes,Relógios e Presentes,Watches & Gifts,5495,5859,1264333.12,1306030.23,8.18,17.31,1,199.04,7.76,4.07
+3,cama_mesa_banho,"Cama, Mesa e Banho","Bed, Bath & Table",9272,10953,1225209.26,1268838.84,7.95,25.26,1,93.44,16.47,3.92
+4,esporte_lazer,Esporte e Lazer,Sports & Leisure,7530,8431,1119923.63,1160340.27,7.27,32.53,1,113.25,14.74,4.17
+5,informatica_acessorios,Informática e Acessórios,Computers & Accessories,6530,7644,1032723.77,1070033.48,6.7,39.23,1,116.26,13.94,3.99
+6,moveis_decoracao,Móveis e Decoração,Furniture & Decor,6307,8160,881063.91,912764.18,5.72,44.95,1,87.25,19.2,3.95
+7,utilidades_domesticas,Utilidades Domésticas,Housewares,5743,6795,759313.29,783164.13,4.91,49.85,1,90.6,18.92,4.11
+8,cool_stuff,Presentes e Novidades,Cool Stuff & Gifts,3559,3718,691680.89,719915.97,4.51,54.36,1,164.12,11.78,4.2
+9,automotivo,Automotivo,Auto,3810,4140,669559.87,691866.48,4.33,58.7,1,139.85,13.53,4.12
+10,ferramentas_jardim,Ferramentas de Jardim,Garden Tools,3448,4268,567354.11,589102.26,3.69,62.39,1,110.24,17.07,4.08
+11,brinquedos,Brinquedos,Toys,3804,4030,547846.53,569328.04,3.57,65.95,1,116.94,13.97,4.21
+12,bebes,Bebês,Baby,2809,2982,466727.65,482324.61,3.02,68.98,1,134.28,14.21,4.08
+13,perfumaria,Perfumaria,Perfumery,3086,3340,443171.63,459911.52,2.88,71.86,1,116.81,11.97,4.22
+14,telefonia,Telefonia,Telephony,4093,4430,379202.62,391852.83,2.45,74.31,1,69.95,18.29,3.99
+15,moveis_escritorio,Móveis de Escritório,Office Furniture,1254,1668,335211.36,347827.87,2.18,76.49,1,160.76,20.0,3.51
+16,papelaria,Papelaria,Stationery,2264,2466,269575.05,278577.11,1.74,78.23,1,90.75,16.98,4.25
+17,pet_shop,Pet Shop,Pet Shop,1688,1924,250614.2,258696.32,1.62,79.85,1,110.03,15.53,4.22
+18,pcs,Computadores (PCs),Computers,177,199,228349.76,237357.7,1.49,81.34,1,1098.92,4.23,4.22
+19,instrumentos_musicais,Instrumentos Musicais,Musical Instruments,611,651,202187.12,209041.39,1.31,82.65,0,283.13,8.84,4.22
+20,eletronicos,Eletrônicos,Electronics,2517,2729,200723.09,207355.73,1.3,83.95,0,56.81,22.76,4.07
+21,sem_categoria,Sem Categoria,Uncategorized,1392,1537,197783.2,205897.19,1.29,85.24,0,111.08,13.68,3.94
+22,eletroportateis,Eletroportáteis,Small Appliances,609,658,198108.47,205831.65,1.29,86.53,0,277.74,7.75,4.22
+23,fashion_bolsas_e_acessorios,"Moda, Bolsas e Acessórios",Fashion Bags Accessories,1820,1985,179888.29,186640.24,1.17,87.7,0,75.23,16.99,4.19
+24,malas_acessorios,Malas e Acessórios,Luggage Accessories,1019,1077,168778.12,175450.66,1.1,88.8,0,128.79,17.82,4.35
+25,consoles_games,Consoles e Games,Consoles Games,1018,1089,167097.73,173790.99,1.09,89.89,0,135.91,11.43,4.14
+26,construcao_ferramentas_construcao,Construção e Ferramentas,Construction Tools Construction,736,916,162382.01,166121.75,1.04,90.93,0,155.14,12.49,4.09
+27,eletrodomesticos_2,Eletrodomésticos II,Home Appliances 2,227,231,118208.52,121549.73,0.76,91.69,0,467.33,8.67,4.16
+28,casa_construcao,Casa e Construção,Home Construction,483,596,95022.37,97749.43,0.61,92.3,0,136.59,14.33,3.96
+29,eletrodomesticos,Eletrodomésticos,Home Appliances,747,754,93301.78,96193.65,0.6,92.9,0,104.55,15.51,4.22
+30,moveis_sala,Móveis de Sala,Furniture Living Room,414,495,85045.07,88117.6,0.55,93.45,0,136.06,20.81,3.93
+31,agro_industria_e_comercio,"Agro, Indústria e Comércio",Agro Industry and Commerce,177,206,76203.3,78625.37,0.49,93.95,0,342.55,7.4,4.09
+32,casa_conforto,Casa e Conforto,Home Comfort,392,429,66438.22,69125.51,0.43,94.38,0,135.22,12.69,3.85
+33,climatizacao,Climatização,Air Conditioning,246,289,59854.55,62177.95,0.39,94.77,0,184.51,10.91,4.05
+34,telefonia_fixa,Telefonia Fixa,Fixed Telephony,212,255,59816.54,61966.02,0.39,95.16,0,216.92,7.53,3.76
+35,moveis_cozinha_area_de_servico_jantar_e_jardim,Móveis de Cozinha e Jantar,Kitchen Dining Laundry Garden Furniture,241,274,57072.97,58941.42,0.37,95.53,0,166.18,20.22,4.03
+36,audio,Áudio,Audio,348,362,56255.32,58181.24,0.36,95.89,0,139.7,10.11,3.84
+37,livros_interesse_geral,Livros de Interesse Geral,Books General Interest,496,537,54182.54,56032.71,0.35,96.24,0,84.36,16.39,4.51
+38,portateis_casa_forno_e_cafe,Portáteis de Casa e Café,Small Appliances Home Oven and Coffee,72,73,49245.9,50428.23,0.32,96.56,0,638.21,5.39,4.44
+39,construcao_ferramentas_iluminacao,Iluminação e Construção,Construction Tools Lights,242,301,47447.14,48435.55,0.3,96.86,0,132.75,15.79,4.08
+40,industria_comercio_e_negocios,"Indústria, Comércio e Negócios",Industry Commerce and Business,232,265,46079.34,47384.8,0.3,97.16,0,145.28,16.45,4.13
+41,construcao_ferramentas_seguranca,Segurança na Construção,Construction Tools Safety,159,183,42504.02,43696.63,0.27,97.43,0,211.88,8.78,3.97
+42,alimentos,Alimentos,Food,441,499,35794.68,36774.41,0.23,97.66,0,57.58,19.73,4.26
+43,market_place,Marketplace,Market Place,274,305,33114.38,34652.15,0.22,97.88,0,91.13,16.06,4.07
+44,construcao_ferramentas_jardim,Construção e Jardim,Construction & Garden Tools,190,232,30283.94,31257.27,0.2,98.07,0,108.17,17.13,4.12
+45,fashion_calcados,Calçados,Fashion Shoes,235,257,27814.83,28961.59,0.18,98.26,0,89.5,17.31,4.28
+46,sinalizacao_e_seguranca,Sinalização e Segurança,Signaling and Security,138,197,27792.59,28419.65,0.18,98.43,0,108.2,23.31,4.09
+47,artes,Artes,Art,195,197,27485.53,28393.06,0.18,98.61,0,120.09,13.93,4.08
+48,bebidas,Bebidas,Drinks,287,361,26971.11,27748.07,0.17,98.79,0,59.64,20.17,4.12
+49,moveis_quarto,Móveis de Quarto,Furniture Bedroom,90,103,23379.22,24157.21,0.15,98.94,0,184.97,18.51,4.25
+50,livros_tecnicos,Livros Técnicos,Books Technical,256,263,22901.07,23565.11,0.15,99.08,0,71.11,18.33,4.39
+51,alimentos_bebidas,Alimentos e Bebidas,Food Drink,221,269,19337.77,19995.2,0.13,99.21,0,55.55,22.73,4.36
+52,construcao_ferramentas_ferramentas,Ferramentas de Construção,Construction Tools,97,103,17934.17,18392.24,0.12,99.33,0,154.41,11.32,4.44
+53,fashion_roupa_masculina,Moda Masculina,Men's Clothing,106,125,12514.95,13074.07,0.08,99.41,0,83.62,16.48,3.76
+54,artigos_de_natal,Artigos de Natal,Christmas Supplies,125,150,11928.75,12311.48,0.08,99.48,0,58.25,26.75,4.07
+55,fashion_underwear_e_moda_praia,Moda Íntima e Praia,Fashion Underwear Beach,117,127,11160.02,11639.88,0.07,99.56,0,73.28,16.61,4.05
+56,tablets_impressao_imagem,"Tablets, Impressão e Imagem",Tablets Printing Image,79,83,8754.61,9189.62,0.06,99.61,0,90.7,14.01,4.12
+57,cine_foto,Cine e Foto,Cine Photo,63,70,7902.18,8093.29,0.05,99.67,0,95.35,15.54,4.29
+58,musica,Música,Music,38,38,6724.86,6930.15,0.04,99.71,0,158.8,10.27,4.21
+59,moveis_colchao_e_estofado,Colchões e Estofados,Furniture Mattress and Upholstery,37,37,5904.75,6142.39,0.04,99.75,0,116.85,26.78,3.89
+60,dvds_blu_ray,DVDs e Blu-Ray,Dvds Blu Ray,56,61,5769.84,6027.33,0.04,99.79,0,74.47,21.27,4.18
+61,artigos_de_festas,Artigos de Festas,Party Supplies,38,42,5285.38,5434.39,0.03,99.82,0,106.31,15.52,3.83
+62,livros_importados,Livros Importados,Books Imported,50,57,5150.94,5286.6,0.03,99.85,0,77.52,14.21,4.51
+63,portateis_cozinha_e_preparadores_de_alimentos,Portáteis de Cozinha,Kitchen Small Appliances,13,14,4228.05,4298.26,0.03,99.88,0,280.97,6.96,3.43
+64,fashion_roupa_feminina,Moda Feminina,Women's Clothing,36,45,3218.44,3373.58,0.02,99.9,0,58.55,18.13,3.93
+65,fashion_esporte,Moda Esportiva,Fashion Sport,26,29,2657.55,2786.27,0.02,99.92,0,72.22,21.19,4.34
+66,la_cuisine,La Cuisine,La Cuisine,13,14,2388.54,2492.73,0.02,99.93,0,146.78,13.96,4.0
+67,artes_e_artesanato,Artes e Artesanato,Arts and Craftmanship,23,24,2184.14,2213.73,0.01,99.95,0,75.58,16.95,4.13
+68,fraldas_higiene,Fraldas e Higiene,Diapers and Hygiene,25,37,2046.19,2097.38,0.01,99.96,0,40.56,26.65,3.38
+69,flores,Flores,Flowers,29,33,1598.91,1649.05,0.01,99.97,0,33.64,30.58,4.42
+70,pc_gamer,PC Gamer,PC Gamer,7,8,1430.1,1473.64,0.01,99.98,0,163.37,8.61,3.63
+71,casa_conforto_2,Casa e Conforto II,Home Comfort 2,24,30,1170.58,1224.86,0.01,99.99,0,25.34,35.05,3.63
+72,cds_dvds_musicais,CDs e DVDs Musicais,Cds Dvds Musicals,12,14,954.99,998.81,0.01,99.99,0,52.14,23.56,4.64
+73,fashion_roupa_infanto_juvenil,Moda Infantojuvenil,Kids' Clothing,7,7,598.67,623.97,0.0,100.0,0,74.28,13.15,5.0
+74,seguros_e_servicos,Seguros e Serviços,Security and Services,2,2,324.51,343.79,0.0,100.0,0,141.64,12.7,2.5

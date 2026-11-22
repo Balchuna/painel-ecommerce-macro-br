@@ -1,0 +1,122 @@
+/// Dimensão calendário diária (2016-09-01 a 2018-10-31), marcada como tabela de datas.
+table dim_calendario
+	dataCategory: Time
+	lineageTag: d0cd3f21-2471-58a9-b685-de83bb8a3659
+
+	column data
+		dataType: dateTime
+		isKey
+		formatString: dd/MM/yyyy
+		lineageTag: 8b168055-ee0e-5147-8457-056207e4cf9e
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 671a44e1-9511-56f9-8c6f-edc33d58c3a1
+		summarizeBy: none
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = User
+
+	column trimestre
+		dataType: string
+		lineageTag: b58105b1-dacf-51d2-ad87-b271cbd4362e
+		summarizeBy: none
+		sourceColumn: trimestre
+		sortByColumn: trimestre_num
+
+		annotation SummarizationSetBy = User
+
+	column trimestre_num
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2878b122-fd7f-55a4-9fae-8c0e7a131f4d
+		summarizeBy: none
+		sourceColumn: trimestre_num
+
+		annotation SummarizationSetBy = User
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: 7a6bfbee-ae88-529c-bfa5-8f004185172b
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = User
+
+	column ano_mes
+		dataType: string
+		lineageTag: c61bc5b7-5002-5ff5-81a0-851ad6521831
+		summarizeBy: none
+		sourceColumn: ano_mes
+		sortByColumn: ano_mes_num
+
+		annotation SummarizationSetBy = User
+
+	column ano_mes_num
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1e7e530c-7035-55c8-ab6d-c80e4df47755
+		summarizeBy: none
+		sourceColumn: ano_mes_num
+
+		annotation SummarizationSetBy = User
+
+	column mes_ano_pt
+		dataType: string
+		lineageTag: 728f18d8-085a-58a0-8e00-0301f4207a79
+		summarizeBy: none
+		sourceColumn: mes_ano_pt
+		sortByColumn: ano_mes_num
+
+		annotation SummarizationSetBy = User
+
+	column dia_semana
+		dataType: int64
+		formatString: 0
+		lineageTag: 5323e8b6-1eb0-5b31-a19f-42c0d8f3a9a8
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+		annotation SummarizationSetBy = User
+
+	column eh_fim_de_semana
+		dataType: int64
+		formatString: 0
+		lineageTag: 1f5e7c2d-6fb9-5f3e-8c61-5abfdf76c133
+		summarizeBy: none
+		sourceColumn: eh_fim_de_semana
+
+		annotation SummarizationSetBy = User
+
+	column trimestre_curto
+		dataType: string
+		lineageTag: fad22be3-7024-52bf-a2af-746fbd14ddab
+		summarizeBy: none
+		sourceColumn: trimestre_curto
+		sortByColumn: trimestre_num
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendario = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_calendario.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"data", "ano", "trimestre", "trimestre_num", "mes", "ano_mes", "ano_mes_num", "mes_ano_pt", "dia_semana", "eh_fim_de_semana"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"data", "ano", "trimestre", "trimestre_num", "mes", "ano_mes", "ano_mes_num", "mes_ano_pt", "dia_semana", "eh_fim_de_semana"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"data", type date}, {"ano", Int64.Type}, {"trimestre", type text}, {"trimestre_num", Int64.Type}, {"mes", Int64.Type}, {"ano_mes", type text}, {"ano_mes_num", Int64.Type}, {"mes_ano_pt", type text}, {"dia_semana", Int64.Type}, {"eh_fim_de_semana", Int64.Type}}, "en-US"),
+				    ComTriCurto = Table.AddColumn(Tipada, "trimestre_curto", each Text.End([trimestre], 2) & "/" & Text.Middle([trimestre], 2, 2), type text)
+				in
+				    ComTriCurto
+
+	annotation PBI_ResultType = Table

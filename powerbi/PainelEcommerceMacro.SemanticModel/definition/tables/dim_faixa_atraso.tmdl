@@ -1,0 +1,52 @@
+/// Faixas ordinais de atraso logístico (5 faixas entregues + Sem entrega).
+table dim_faixa_atraso
+	lineageTag: 53d4d657-5701-58da-aec5-e856ecff51e9
+
+	column faixa_atraso
+		dataType: string
+		lineageTag: eb055b5c-0a33-520c-b039-39a85efc4ff2
+		summarizeBy: none
+		sourceColumn: faixa_atraso
+		sortByColumn: ordem
+
+		annotation SummarizationSetBy = User
+
+	column faixa_atraso_en
+		dataType: string
+		lineageTag: b69ec953-dfa1-5b83-be43-d445027ff3cc
+		summarizeBy: none
+		sourceColumn: faixa_atraso_en
+
+		annotation SummarizationSetBy = User
+
+	column ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7a94179e-942a-5dd0-9803-f4a871cbcda9
+		summarizeBy: none
+		sourceColumn: ordem
+
+		annotation SummarizationSetBy = User
+
+	column eh_atrasado
+		dataType: int64
+		formatString: 0
+		lineageTag: 1f7418e2-bc45-53c7-bcdd-aaedad66a012
+		summarizeBy: none
+		sourceColumn: eh_atrasado
+
+		annotation SummarizationSetBy = User
+
+	partition dim_faixa_atraso = m
+		mode: import
+		source =
+				let
+				    Fonte = fn_LerCsv("dim_faixa_atraso.csv"),
+				    Selecionadas = Table.SelectColumns(Fonte, {"faixa_atraso", "faixa_atraso_en", "ordem", "eh_atrasado"}),
+				    Nulos = Table.ReplaceValue(Selecionadas, "", null, Replacer.ReplaceValue, {"faixa_atraso", "faixa_atraso_en", "ordem", "eh_atrasado"}),
+				    Tipada = Table.TransformColumnTypes(Nulos, {{"faixa_atraso", type text}, {"faixa_atraso_en", type text}, {"ordem", Int64.Type}, {"eh_atrasado", Int64.Type}}, "en-US")
+				in
+				    Tipada
+
+	annotation PBI_ResultType = Table

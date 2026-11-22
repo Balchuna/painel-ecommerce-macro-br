@@ -1,0 +1,38 @@
+relationship e9eed28d-b091-518f-b66b-3b1d70c5f208
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_pedidos.data_compra
+	toColumn: dim_calendario.data
+
+relationship a755c05e-e8e8-5845-9db2-bc91a4ab464a
+	fromColumn: fato_pedidos.uf_cliente
+	toColumn: dim_geo_uf.uf
+
+relationship abf666b2-43f2-5242-9a09-67b6cf34697d
+	fromColumn: fato_pedidos.categoria_principal
+	toColumn: dim_categoria.categoria_codigo
+
+relationship bacf419b-c2bf-51c2-af08-7e21b86031fa
+	fromColumn: fato_pedidos.faixa_atraso
+	toColumn: dim_faixa_atraso.faixa_atraso
+
+relationship dac63f73-a646-5426-bd21-88aa97fc2638
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_itens_pedido.data_compra
+	toColumn: dim_calendario.data
+
+relationship 118ca6ca-de4c-5f86-8f76-d82c72879d4d
+	fromColumn: fato_itens_pedido.uf_cliente
+	toColumn: dim_geo_uf.uf
+
+relationship 79f8e634-bb9b-528c-8aab-2c4f2a773620
+	fromColumn: fato_itens_pedido.categoria_codigo
+	toColumn: dim_categoria.categoria_codigo
+
+relationship 9d9afb9b-54cf-5e39-8b39-25fd98909e56
+	fromColumn: fato_itens_pedido.seller_id
+	toColumn: dim_vendedor.seller_id
+
+relationship 2ff0ffe5-5f7b-589e-bbde-e98d18d6183a
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_macro_mensal.data_mes
+	toColumn: dim_calendario.data
